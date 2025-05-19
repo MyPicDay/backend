@@ -6,5 +6,4 @@ import mypicday.store.user.entity.User;
 import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, String> {
-    List<User> findAllByJob(String job);
 }
