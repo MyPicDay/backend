@@ -25,14 +25,12 @@ import java.util.stream.IntStream;
 
      @Override
      public void run(ApplicationArguments args) {
-         log.info("Start test diary generator");
          if (diaryRepository.count() == 0 && userRepository.count() == 0) {
              List<User> users = IntStream.range(0, 3).mapToObj(i -> userRepository.save(new User(null))).toList();
              List<Diary> diaries = IntStream.range(0, 3)
                      .mapToObj(i -> new Diary(users.get(i), "제목", "내용", Status.PUBLIC, null, null, null)).toList();
              diaryRepository.saveAll(diaries);
          }
-         log.info("End test diary generator");
      }
  }
 
