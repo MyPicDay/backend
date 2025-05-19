@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 
      @Override
      public void run(ApplicationArguments args) {
-         List<User> users = IntStream.range(0, 3).mapToObj(i -> userRepository.save(new User(null))).toList();
+         List<User> users = IntStream.range(0, 3).mapToObj(i -> userRepository.save(new User(null, "test"))).toList();
          List<Diary> diaries = IntStream.range(0, 3)
                  .mapToObj(i -> new Diary(users.get(i), "제목", "내용", Status.PUBLIC, null, null, null)).toList();
          diaryRepository.saveAll(diaries);
