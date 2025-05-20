@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mypicday.store.global.entity.BaseEntity;
 import mypicday.store.like.entity.LikeEntity;
-
 import mypicday.store.user.entity.User;
 import java.util.List;
 
