@@ -9,3 +9,6 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+
+jwt:
+  secret: ${JWT_KET:LhVYSkvR90p9A7jPFlWWZ0uB3RPiIGnN8s3aXk2lbE4=}
