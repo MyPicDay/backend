@@ -1,10 +1,9 @@
 package mypicday.store.user.entity;
 
-import jakarta.persistence.Entity;
-import lombok.Getter;
-
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import mypicday.store.global.entity.BaseEntity;
 
 @Entity
@@ -17,4 +16,9 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(length = 36)
     private String id;
+
+    // TODO (삭제 예정) 테스트를 위해 임시
+    public User(String id) {
+        this.id = id;
+    }
 }
