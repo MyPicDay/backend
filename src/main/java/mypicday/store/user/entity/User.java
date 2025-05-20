@@ -17,7 +17,7 @@ public class User extends BaseEntity {
     @Column(length = 36)
     private String id;
 
-    @Column(nullable = false, updatable = false, length = 50)
+    @Column(nullable = false)
     private String nickname;
 
     // TODO (삭제 예정) 테스트를 위해 임시
