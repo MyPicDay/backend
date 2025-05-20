@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mypicday.store.global.entity.BaseEntity;
+
+import mypicday.store.like.entity.LikeEntity;
+
 import mypicday.store.user.entity.User;
 import java.util.List;
 
@@ -25,7 +28,7 @@ public class Diary extends BaseEntity {
 
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "id")
     private User user;
 
 
@@ -35,22 +38,29 @@ public class Diary extends BaseEntity {
     @Enumerated(STRING)
     private Visibility status;
 
+    @OneToOne (fetch = LAZY , cascade = CascadeType.ALL)
+    private LikeEntity like ;
+
 
     @ElementCollection
     @CollectionTable(name = "diary_images", joinColumns = @JoinColumn(name = "diary_id"))
-    @Column(name = "image", length = 100000) //
+    @Column(name = "image", length = 100000)
     private List<String> imageList;
 
-    public Diary(User user, String title, String content, Visibility status, List<String> imageList) {
-        this.user = user;
-        this.title = title;
+
+    public Diary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
         this.content = content;
         this.status = status;
+        this.like = like;
         this.imageList = imageList;
+        this.title = title;
+        this.user = user;
     }
 
-    public static Diary crateDiary(User user, String title, String content, Visibility status, List<String> imageList) {
-        return new Diary(user, title, content, status, imageList);
+    public static Diary crateDiary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
+        return new Diary(content , status, like , imageList , title , user);
     }
+
+
 
 }
