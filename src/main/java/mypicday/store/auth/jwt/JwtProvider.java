@@ -4,12 +4,14 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+
 
 @Slf4j
 @Component
@@ -26,13 +28,15 @@ public class JwtProvider {
     public String generateToken(String email) {
         log.info("[JWT 생성] 이메일 : {}", email);
 
-        Claims claims = Jwts.claims().setSubject(email);
+      Claims claims = Jwts.claims().setSubject(email);
         Date now = new Date();
         Date expiry = new Date(now.getTime() + validityInMs);
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+
         claims.put("roles", List.of("ROLE_USER"));
 
         log.debug("[JWT 생성 완료] 만료시간 : {}", expiry);
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
@@ -82,10 +86,6 @@ public class JwtProvider {
         }
     }
 
-
-    /*
-    * 토큰 Bearer 분리
-    * */
     private String cleanToken(String token) {
         if (token != null && token.startsWith("Bearer ")) {
             return token.substring(7);

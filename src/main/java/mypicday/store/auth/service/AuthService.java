@@ -19,7 +19,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
-
     /**
      * 회원가입
      */
@@ -30,8 +29,8 @@ public class AuthService {
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             log.warn("[회원가입] 이미 존재하는 이메일 요청 : 이메일={}", dto.getEmail());
             throw new RuntimeException("이미 존재하는 이메일입니다.");
-        }
 
+        }
         User user = new User(
                 dto.getEmail(),
                 passwordEncoder.encode(dto.getPassword()),
