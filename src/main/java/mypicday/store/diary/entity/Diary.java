@@ -26,7 +26,7 @@ public class Diary extends BaseEntity {
     private Long id;
 
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY )
     @JoinColumn(name = "id")
     private User user;
 
@@ -38,6 +38,7 @@ public class Diary extends BaseEntity {
     private Visibility status;
 
     @OneToOne (fetch = LAZY , cascade = CascadeType.ALL)
+    @JoinColumn(name = "like_id")
     private LikeEntity like ;
 
 
