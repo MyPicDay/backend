@@ -15,6 +15,7 @@ import static jakarta.persistence.FetchType.*;
 import static jakarta.persistence.GenerationType.*;
 import static lombok.AccessLevel.*;
 
+
 @Entity
 @Table(name = "diaries")
 @Getter
@@ -63,4 +64,14 @@ public class Diary extends BaseEntity {
 
 
 
+   // TODO (추후 수정 예정) 임시 생성용 public 생성자
+    public Diary(User user, String title, String content, Status status, String mainImageUrl, String imageUrl1, String imageUrl2) {
+        this.user = user;
+        this.title = title;
+        this.content = content;
+        this.status = status;
+        MainImageUrl = mainImageUrl;
+        this.imageUrl1 = imageUrl1;
+        this.imageUrl2 = imageUrl2;
+    }
 }
