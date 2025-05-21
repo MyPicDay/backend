@@ -49,4 +49,9 @@ public class DiaryService {
         ).map(DiaryResponse::from);
         return response;
     }
+
+    public Long findLikeCount(Long diaryId){
+        Optional<Diary> findLike = diaryRepository.findById(diaryId);
+        return findLike.map(diary -> diary.getLike().getCount()).orElse(0L);
+    }
 }
