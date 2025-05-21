@@ -1,7 +1,7 @@
 package mypicday.store.diary.controller;
 
 import lombok.RequiredArgsConstructor;
-import mypicday.store.diary.DiaryService;
+import mypicday.store.diary.service.DiaryService;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

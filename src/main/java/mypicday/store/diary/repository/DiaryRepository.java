@@ -1,22 +1,12 @@
 package mypicday.store.diary.repository;
 
 import mypicday.store.diary.entity.Diary;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/**
- * @packageName    : mypicday.diary.repository
- * @fileName       : DiaryRepository
- * @author         : jieun
- * @description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 25. 5. 19.        jieun       최초 생성
- */
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
     // TODO 친구 목록으로 인한 쿼리 및 전체 목록 나중에 하고 일단 공통된 반환 값만 나오게 설정
     @Query("""
@@ -31,4 +21,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             @Param("loginUserId") String loginUserId,
             Pageable pageable
     );
+
+    @Query("SELECT d.like.count FROM Diary d WHERE d.id = :diaryId")
+    long LikeCountByDiaryId(@Param("diaryId") Long diaryId);
+
 }

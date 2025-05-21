@@ -6,27 +6,17 @@ import lombok.NoArgsConstructor;
 import mypicday.store.diary.dto.FileDTO;
 import mypicday.store.diary.dto.UserDTO;
 import mypicday.store.diary.entity.Diary;
-import mypicday.store.diary.entity.Status;
+import mypicday.store.diary.entity.Visibility;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * @packageName : mypicday.diary.dto
- * @author : jieun
- * @fileName : DiarySearchDTO
- * @description : 기본 일기 목록 Response DTO
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 25. 5. 19.        jieun       최초 생성
- */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DiaryResponse {
     private Long diaryId;
-    private Status visibility;
     private String title;
+    private Visibility visibility;
     private String content;
     // NOTE 유저 정보를 담는 DTO를 가정
     private UserDTO author;
