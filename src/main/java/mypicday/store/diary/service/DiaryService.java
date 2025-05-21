@@ -29,9 +29,14 @@ public class DiaryService {
 
     public Diary save(String userID , DiaryDto diaryDto) {
         Optional<User> user = userRepository.findById(userID);
-        Diary save = diaryRepository.save(Diary.crateDiary(diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ,LikeEntity.create() ,
+
+        if (user.isEmpty()) {
+            return null;
+        }
+        log.info("Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ={}", Visibility.valueOf(diaryDto.getVisibility().toUpperCase()));
+
+        return diaryRepository.save(new Diary(diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ,LikeEntity.create() ,
                        diaryDto.getAllImages() ,diaryDto.getTitle(), user.get()));
-        return save;
     }
 
     public Page<DiaryResponse> findDiaries(
@@ -45,4 +50,9 @@ public class DiaryService {
         ).map(DiaryResponse::from);
         return response;
     }
+
+    public long findLikeCount(Long diaryId) {
+        return diaryRepository.LikeCountByDiaryId(diaryId);
+    }
+    
 }
