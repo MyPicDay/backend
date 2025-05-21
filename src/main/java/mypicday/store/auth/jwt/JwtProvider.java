@@ -3,6 +3,7 @@ package mypicday.store.auth.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Component
 public class JwtProvider {
 
@@ -18,14 +20,19 @@ public class JwtProvider {
 
     private final long validityInMs = 3600000; // 1시간
 
+    /*
+    * JWT 생성
+    * */
     public String generateToken(String email) {
+        log.info("[JWT 생성] 이메일 : {}", email);
+
         Claims claims = Jwts.claims().setSubject(email);
         Date now = new Date();
         Date expiry = new Date(now.getTime() + validityInMs);
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        claims.put("roles", List.of("ROLE_USER"));
 
-        claims.put("roles", List.of("ROLE_USER")); // 또는 user.getRoles()
-
+        log.debug("[JWT 생성 완료] 만료시간 : {}", expiry);
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
@@ -34,18 +41,29 @@ public class JwtProvider {
                 .compact();
     }
 
+    /*
+    * JWT에서 이메일 추출
+    * */
     public String getEmailFromToken(String token) {
-        token = cleanToken(token); // "Bearer " 같은 prefix 제거 메서드
+        token = cleanToken(token);
+        log.debug("[JWT 파싱] 이메일 추출 시작");
 
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        return Jwts.parserBuilder()
-                .setSigningKey(key)  // secretKey는 String 또는 SecretKey 객체
+
+        String email = Jwts.parserBuilder()
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject(); // JWT의 subject가 email
+                .getSubject();
+
+        log.debug("[JWT 파싱 완료] 이메일: {}", email);
+        return email;
     }
 
+    /*
+    * 토큰 유효성 검사
+    * */
     public boolean validateToken(String token) {
         try {
             token = cleanToken(token);
@@ -55,23 +73,19 @@ public class JwtProvider {
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token);
-//            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            log.debug("[JWT 유효성 검사] 유효성 검사 통과");
             return true;
+
         } catch (Exception e) {
+            log.warn("[JWT 유효성 검사 실패] 에러: {}", e.getMessage());
             return false;
         }
     }
 
-    public String getRoleFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.get("role", String.class);
-    }
 
-
-    // Bearer 제거
+    /*
+    * 토큰 Bearer 분리
+    * */
     private String cleanToken(String token) {
         if (token != null && token.startsWith("Bearer ")) {
             return token.substring(7);
