@@ -9,7 +9,6 @@ import mypicday.store.diary.repository.DiaryRepository;
 
 import mypicday.store.like.entity.LikeEntity;
 import mypicday.store.likedUser.Dto.LikedDto;
-import mypicday.store.likedUser.entity.LikeStatus;
 import mypicday.store.likedUser.entity.LikedUser;
 import mypicday.store.likedUser.repository.LikedUserRepository;
 import mypicday.store.user.entity.User;
