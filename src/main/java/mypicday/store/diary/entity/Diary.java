@@ -41,12 +41,10 @@ public class Diary extends BaseEntity {
     @JoinColumn(name = "like_id")
     private LikeEntity like ;
 
-
     @ElementCollection
     @CollectionTable(name = "diary_images", joinColumns = @JoinColumn(name = "diary_id"))
     @Column(name = "image", length = 100000)
     private List<String> imageList;
-
 
     public Diary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
         this.content = content;
