@@ -17,8 +17,19 @@ public class User extends BaseEntity {
     @Column(length = 36)
     private String id;
 
-    @Column(nullable = false)
+    private String email;
+
+    //@Column(name = "password", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화'")
+    private String password;
+
+   // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
     private String nickname;
+
+    public User(String email, String password, String nickname) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+    }
 
     // TODO (삭제 예정) 테스트를 위해 임시
     public User(String id, String nickname) {
