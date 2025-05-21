@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mypicday.store.global.entity.BaseEntity;
-
 import mypicday.store.like.entity.LikeEntity;
-
 import mypicday.store.user.entity.User;
 import java.util.List;
 
@@ -14,6 +12,7 @@ import static jakarta.persistence.EnumType.*;
 import static jakarta.persistence.FetchType.*;
 import static jakarta.persistence.GenerationType.*;
 import static lombok.AccessLevel.*;
+
 
 @Entity
 @Table(name = "diaries")
@@ -42,12 +41,10 @@ public class Diary extends BaseEntity {
     @JoinColumn(name = "like_id")
     private LikeEntity like ;
 
-
     @ElementCollection
     @CollectionTable(name = "diary_images", joinColumns = @JoinColumn(name = "diary_id"))
     @Column(name = "image", length = 100000)
     private List<String> imageList;
-
 
     public Diary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
         this.content = content;
@@ -57,11 +54,4 @@ public class Diary extends BaseEntity {
         this.title = title;
         this.user = user;
     }
-
-    public static Diary crateDiary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
-        return new Diary(content , status, like , imageList , title , user);
-    }
-
-
-
 }
