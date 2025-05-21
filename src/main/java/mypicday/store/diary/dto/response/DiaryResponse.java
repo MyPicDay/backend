@@ -8,6 +8,7 @@ import mypicday.store.diary.dto.UserDTO;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.entity.Status;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -25,6 +26,7 @@ import java.util.List;
 public class DiaryResponse {
     private Long diaryId;
     private Status visibility;
+    private String title;
     private String content;
     // NOTE 유저 정보를 담는 DTO를 가정
     private UserDTO author;
@@ -32,16 +34,19 @@ public class DiaryResponse {
     private List<FileDTO> imageUrls;
     private int likeCount;
     private int commentCount;
+    private String createdAt;
 
     private DiaryResponse(final Diary diary) {
         this.diaryId = diary.getId();
         this.visibility = diary.getStatus();
         this.content = diary.getContent();
+        this.title = diary.getTitle();
         // TODO UserDTO, 썸네일 이미지 목록, 좋아요 수, 댓글 수 하드코딩
-        this.author = new UserDTO(1L, "홍길동", "");
+        this.author = new UserDTO(1L, "박지은", "");
         this.imageUrls = List.of();
         this.likeCount = 0;
         this.commentCount = 0;
+        this.createdAt = diary.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
     public static DiaryResponse from(final Diary diary) {

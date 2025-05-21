@@ -10,16 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @packageName    : mypicday.diary.controller
- * @fileName       : DiaryController
- * @author         : User
- * @description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 25. 5. 19.        User       최초 생성
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/diaries")
