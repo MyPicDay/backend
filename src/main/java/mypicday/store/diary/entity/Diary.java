@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mypicday.store.global.entity.BaseEntity;
-
 import mypicday.store.like.entity.LikeEntity;
 
 import mypicday.store.user.entity.User;
@@ -56,9 +55,5 @@ public class Diary extends BaseEntity {
         this.imageList = imageList;
         this.title = title;
         this.user = user;
-    }
-
-    public static Diary crateDiary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
-        return new Diary(content , status, like , imageList , title , user);
     }
 }
