@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.diary.service.DiaryService;
+import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.likedUser.Dto.LikedDto;
 import mypicday.store.likedUser.Dto.ResponseLikeCountDto;
 import mypicday.store.likedUser.service.LikedUserService;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +23,8 @@ public class ApiLikeController {
     private final DiaryService diaryService;
 
     @PostMapping("/diary/like")
-    public void UsersLike(String userId , @RequestBody LikedDto likedDto) {
-        userId = "1";
+    public void UsersLike(@RequestBody LikedDto likedDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        String userId = customUserDetails.getId();
         likedUserService.LikedUser(userId , likedDto);
     }
 
