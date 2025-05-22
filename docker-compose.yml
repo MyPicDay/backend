@@ -16,6 +16,8 @@ services:
       - mypicday-network
   web:
     image: mypicday:latest
+    build:
+      context: .
     container_name: mypicday-web
     ports:
       - "80:8080" # 웹 포트를 환경 변수로 관리
@@ -26,7 +28,7 @@ services:
       PROD_DB_URL: ${PROD_DB_URL}
       PROD_DB_USERNAME: ${PROD_DB_USERNAME}
       PROD_DB_PASSWORD: ${PROD_DB_PASSWORD}
-      JWT_KET: ${JWT_KET}
+      JWT_KEY: ${JWT_KEY}
     depends_on:
       - prod-db
     networks:
