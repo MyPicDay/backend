@@ -40,7 +40,7 @@ services:
     profiles:
       - "prod"
     environment:
-      MYSQL_ROOT_PASSWORD: ${DEV_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${PROD_DB_PASSWORD}
       MYSQL_DATABASE: mypicday
     volumes:
       - mypicday-data:/var/lib/mysql
