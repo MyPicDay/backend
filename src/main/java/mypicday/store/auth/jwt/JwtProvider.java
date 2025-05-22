@@ -20,7 +20,7 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final long accessValidityInMs = 3600; // 6분
+    private final long accessValidityInMs = 3600000; // 1시간
     private final long refreshValidityInMs = 36000000; // 10시간
 
     /*
