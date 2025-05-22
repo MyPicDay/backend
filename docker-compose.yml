@@ -18,7 +18,7 @@ services:
     image: mypicday:latest
     container_name: mypicday-web
     ports:
-      - "8080:8080" # 웹 포트를 환경 변수로 관리
+      - "80:8080" # 웹 포트를 환경 변수로 관리
     profiles:
       - "prod"
     environment:
