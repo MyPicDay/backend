@@ -29,6 +29,7 @@ public class DiaryService {
 
     public Diary save(String userID , DiaryDto diaryDto) {
         Optional<User> user = userRepository.findById(userID);
+
         if (user.isEmpty()) {
             return null;
         }
@@ -50,8 +51,7 @@ public class DiaryService {
         return response;
     }
 
-    public Long findLikeCount(Long diaryId){
-        Optional<Diary> findLike = diaryRepository.findById(diaryId);
-        return findLike.map(diary -> diary.getLike().getCount()).orElse(0L);
+    public long findLikeCount(Long diaryId) {
+        return diaryRepository.LikeCountByDiaryId(diaryId);
     }
 }

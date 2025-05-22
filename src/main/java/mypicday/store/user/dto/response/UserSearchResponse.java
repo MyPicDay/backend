@@ -1,9 +1,9 @@
 package mypicday.store.user.dto.response;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import mypicday.store.user.entity.User;
-
-import java.util.Objects;
 
 /**
  * @author : User
@@ -18,11 +18,13 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserSearchResponse {
+    private String userId;
     private String nickname;
     private String profileImageUrl;
     private boolean isFollowing;
 
-    private UserSearchResponse(String nickname, String profileImageUrl, boolean isFollowing) {
+    private UserSearchResponse(String userId, String nickname, String profileImageUrl, boolean isFollowing) {
+        this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.isFollowing = isFollowing;
@@ -30,6 +32,7 @@ public class UserSearchResponse {
 
     public static UserSearchResponse from(User user) {
         return new UserSearchResponse(
+                user.getId(),
                 user.getNickname(),
                 // TODO userProfileImage, isFollowing 하드 코딩
                 "",

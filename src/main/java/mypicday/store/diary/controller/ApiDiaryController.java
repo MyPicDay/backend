@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -41,6 +42,7 @@ public class ApiDiaryController {
             }
         }
         diaryDto.setAllImages(images);
+
         diaryService.save(userId , diaryDto);
 
         return ResponseEntity.ok().build() ;
