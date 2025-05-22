@@ -54,5 +54,4 @@ public class DiaryService {
     public long findLikeCount(Long diaryId) {
         return diaryRepository.LikeCountByDiaryId(diaryId);
     }
-    
 }
