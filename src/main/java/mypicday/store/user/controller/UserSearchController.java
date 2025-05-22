@@ -11,16 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @author : jieun
- * @packageName : mypicday.store.user.controller
- * @fileName : UserSearchController
- * @description :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 25. 5. 20.        jieun      유저 검색 컨트롤러 최초 생성 (채연님 작업 중으로 혼선 방지를 위해 UserController -> UserSearchController로 명명)
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
