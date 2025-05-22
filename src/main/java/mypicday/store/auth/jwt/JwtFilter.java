@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -28,28 +31,43 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
         String authHeader = request.getHeader("Authorization");
+        log.debug("[JWT 필터] 요청 URI : {}", requestURI);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+            log.debug("[JWT 필터] Authorization 헤더에서 토큰 추출 성공");
 
-            if (jwtProvider.validateToken(token)) {
-                String email = jwtProvider.getEmailFromToken(token);
+            try {
+                if (jwtProvider.validateToken(token)) {
+                    String email = jwtProvider.getEmailFromToken(token);
+                    log.info("[JWT 필터] 토큰 검증 성공 : 이메일={}", email);
 
-                User user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("유저 없음"));
-                System.out.println("JWT 토큰 검증 성공, 이메일: " + email);
+                    User user = userRepository.findByEmail(email)
+                            .orElseThrow(() -> {
+                                log.warn("[JWT 필터] 사용자 이메일 DB 조회 실패 : {}", email);
+                                return new RuntimeException("유저 없음");
+                            });
 
+                    CustomUserDetails userDetails = new CustomUserDetails(user.getId(), user.getEmail(), user.getNickname());
 
-                CustomUserDetails userDetails = new CustomUserDetails(user.getId(), user.getEmail(), user.getNickname());
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities()
+                    );
 
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-//                        userDetails, null, userDetails.getAut₩horities()
-                        userDetails, null, List.of()
-                );
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("[JWT 필터] SecurityContext 인증 완료 : 사용자 ID={}, 이메일={}",
+                            user.getId(), user.getEmail());
+                }else{
+                    log.warn("[JWT 필터] 토큰 유효성 검사 실패");
+                }
+            }catch (Exception e){
+                log.error("[JWT 필터] 토큰 처리 중 오류 발생 : {}", e.getMessage());
             }
+        }else{
+            log.debug("[JWT 필터] Authorization 헤더 토큰 없음");
         }
 
         chain.doFilter(request, response);

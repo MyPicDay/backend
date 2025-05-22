@@ -1,6 +1,7 @@
 package mypicday.store.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mypicday.store.auth.dto.LoginRequest;
 import mypicday.store.auth.dto.SignupRequest;
 import mypicday.store.auth.jwt.JwtProvider;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -17,28 +19,45 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
+    /**
+     * 회원가입
+     */
     public void signup(SignupRequest dto) {
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new RuntimeException("이미 존재하는 아이디입니다.");
-        }
+        log.info("[회원 가입] 서비스 호출 : 이메일={}, 닉네임={}", dto.getEmail(), dto.getNickname());
 
+        // 이메일 존재 여부 확인
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            log.warn("[회원가입] 이미 존재하는 이메일 요청 : 이메일={}", dto.getEmail());
+            throw new RuntimeException("이미 존재하는 이메일입니다.");
+
+        }
         User user = new User(
                 dto.getEmail(),
                 passwordEncoder.encode(dto.getPassword()),
                 dto.getNickname()
         );
-        System.out.println("nickname = " + dto.getNickname());
         userRepository.save(user);
+        log.info("[회원 가입] 완료 : 이메일={}, 닉네임={}", dto.getEmail(), dto.getNickname());
     }
 
+    /**
+     * 로그인
+     */
     public String login(LoginRequest dto) {
+        log.info("[로그인] 서비스 호출 : 이메일={}", dto.getEmail());
+
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> {
+                    log.warn("[로그인] 실패 - 존재하지 않는 사용자 : 이메일={}", dto.getEmail());
+                    return new RuntimeException("존재하지 않는 사용자입니다.");
+                });
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            log.warn("[로그인] 실패 - 비밀번호 불일치 : 이메일={}", dto.getEmail());
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
+        log.info("[로그인] 완료 : 이메일={}", dto.getEmail());
         return jwtProvider.generateToken(user.getEmail());
     }
 }
