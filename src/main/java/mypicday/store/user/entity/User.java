@@ -30,10 +30,4 @@ public class User extends BaseEntity {
         this.password = password;
         this.nickname = nickname;
     }
-
-    // TODO (삭제 예정) 테스트를 위해 임시
-    public User(String id, String nickname) {
-        this.id = id;
-        this.nickname = nickname;
-    }
 }
