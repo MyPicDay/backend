@@ -53,9 +53,9 @@ public class ApiDiaryController {
         for(MultipartFile file : diaryDto.getImages()){
             if (!file.isEmpty()) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get(UPLOAD_DIRECTORY + fileName);
+                Path path = Paths.get(UPLOAD_DIRECTORY + "/" + fileName);
                 Files.copy(file.getInputStream(), path);  // 현재는 서버 로컬에 저장
-                images.add(path.toString());
+                images.add(fileName);
             }
         }
         diaryDto.setAllImages(images);
