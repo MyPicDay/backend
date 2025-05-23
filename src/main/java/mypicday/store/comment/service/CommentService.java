@@ -27,7 +27,8 @@ public class CommentService {
     private final DiaryRepository diaryRepository;
 
    // 댓글 등록
-    public Comment saveComment(String userId, CommentDto commentDto) {
+    public Comment saveComment(CommentDto commentDto ,String userId) {
+        log.info("commentDto = {}", commentDto);
         Long findDiaryId = commentDto.getDiaryId();
         User user = userRepository.findById(userId).get();
         Diary diary = diaryRepository.findById(findDiaryId).get();

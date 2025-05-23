@@ -7,4 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class ResponseLikeCountDto {
     private Long count ;
+    private boolean liked ;
 }

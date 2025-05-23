@@ -34,8 +34,9 @@ public class DiaryService {
         }
         log.info("Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ={}", Visibility.valueOf(diaryDto.getVisibility().toUpperCase()));
 
-        return diaryRepository.save(new Diary(diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ,LikeEntity.create() ,
-                       diaryDto.getAllImages() ,diaryDto.getTitle(), user.get()));
+        Diary diary = new Diary(diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ,LikeEntity.create() ,
+                diaryDto.getAllImages() ,diaryDto.getTitle(), user.get());
+        return diaryRepository.save(diary);
     }
 
     public Page<DiaryResponse> findDiaries(

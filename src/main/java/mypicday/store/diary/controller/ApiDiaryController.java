@@ -28,22 +28,34 @@ public class ApiDiaryController {
     private final DiaryService diaryService;
 
     @PostMapping("/diary")
-    public ResponseEntity<String> Diary(@ModelAttribute DiaryDto diaryDto ,@AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
-        String userId= customUserDetails.getId();
+    public ResponseEntity<String> Diary(@ModelAttribute DiaryDto diaryDto,
+                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
+        String userId = customUserDetails.getId();
         List<String> images = new ArrayList<>();
 
-        for(MultipartFile file : diaryDto.getImages()){
-            if (!file.isEmpty()) {
-                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get("uploads/" + fileName);
-                Files.copy(file.getInputStream(), path);  // 현재는 서버 로컬에 저장
-                images.add("/uploads/" + fileName);
+        // uploads 폴더 존재 확인 및 생성
+        Path uploadDir = Paths.get("uploads");
+        if (Files.notExists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        if (diaryDto.getImages() != null) {
+            for (MultipartFile file : diaryDto.getImages()) {
+                if (!file.isEmpty()) {
+                    String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                    Path filePath = uploadDir.resolve(fileName);
+
+                    Files.copy(file.getInputStream(), filePath);  // 서버 로컬에 저장
+                    images.add("/uploads/" + fileName);
+                }
             }
         }
-        diaryDto.setAllImages(images);
-        diaryService.save(userId , diaryDto);
 
-        return ResponseEntity.ok().build() ;
+        diaryDto.setAllImages(images);
+        log.info("diaryDto: {}", diaryDto.getAllImages());
+
+        diaryService.save(userId, diaryDto);
+        return ResponseEntity.ok().build();
     }
 
 }
