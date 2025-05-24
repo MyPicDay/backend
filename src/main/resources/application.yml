@@ -16,4 +16,4 @@ spring:
         max-page-size: 100
 
 jwt:
-  secret: ${JWT_KET:LhVYSkvR90p9A7jPFlWWZ0uB3RPiIGnN8s3aXk2lbE4=}
+  secret: ${JWT_KEY:LhVYSkvR90p9A7jPFlWWZ0uB3RPiIGnN8s3aXk2lbE4=}

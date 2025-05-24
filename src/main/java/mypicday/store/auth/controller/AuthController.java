@@ -122,6 +122,7 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
                 .body("로그아웃 완료");
+
     }
 
 }
