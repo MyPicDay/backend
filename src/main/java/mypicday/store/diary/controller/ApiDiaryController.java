@@ -20,29 +20,43 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api")
 public class ApiDiaryController {
 
-    private static final String UPLOAD_DIRECTORY = "upload";
     private final DiaryService diaryService;
 
-    @PostConstruct
-    public void init() {
-        Path uploadPath = Paths.get(UPLOAD_DIRECTORY);
-        try {
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-                System.out.println("업로드 디렉토리 생성됨: " + uploadPath.toAbsolutePath());
-            } else {
-                System.out.println("업로드 디렉토리 이미 존재함: " + uploadPath.toAbsolutePath());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("업로드 디렉토리 생성 실패: " + uploadPath.toAbsolutePath(), e);
+    @PostMapping("/diary")
+    public ResponseEntity<String> Diary(@ModelAttribute DiaryDto diaryDto,
+                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
+        String userId = customUserDetails.getId();
+        List<String> images = new ArrayList<>();
+
+        // uploads 폴더 존재 확인 및 생성
+        Path uploadDir = Paths.get("uploads");
+        if (Files.notExists(uploadDir)) {
+            Files.createDirectories(uploadDir);
         }
+
+        if (diaryDto.getImages() != null) {
+            for (MultipartFile file : diaryDto.getImages()) {
+                if (!file.isEmpty()) {
+                    String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                    Path filePath = uploadDir.resolve(fileName);
+
+                    Files.copy(file.getInputStream(), filePath);  // 서버 로컬에 저장
+                    images.add("/uploads/" + fileName);
+                }
+            }
+        }
+
+        diaryDto.setAllImages(images);
+        log.info("diaryDto: {}", diaryDto.getAllImages());
+
+        diaryService.save(userId, diaryDto);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/diary")

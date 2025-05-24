@@ -35,8 +35,9 @@ public class DiaryService {
         }
         log.info("Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ={}", Visibility.valueOf(diaryDto.getVisibility().toUpperCase()));
 
-        return diaryRepository.save(new Diary(diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ,LikeEntity.create() ,
-                       diaryDto.getAllImages() ,diaryDto.getTitle(), user.get()));
+        Diary diary = new Diary(diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) ,LikeEntity.create() ,
+                diaryDto.getAllImages() ,diaryDto.getTitle(), user.get());
+        return diaryRepository.save(diary);
     }
 
     public Page<DiaryResponse> findDiaries(
@@ -51,7 +52,8 @@ public class DiaryService {
         return response;
     }
 
-    public long findLikeCount(Long diaryId) {
-        return diaryRepository.LikeCountByDiaryId(diaryId);
+    public Long findLikeCount(Long diaryId){
+        Optional<Diary> findLike = diaryRepository.findById(diaryId);
+        return findLike.map(diary -> diary.getLike().getCount()).orElse(0L);
     }
 }

@@ -33,27 +33,40 @@ public class LikedUserService {
     public void LikedUser(String userId, LikedDto likedDto) {
 
         User findUser = userRepository.findById(userId).get();
+        log.info("likedDto: {}", likedDto);
         LikeEntity findLike = diaryRepository.findById(likedDto.getDiaryId()).get().getLike();
 
         Optional<LikedUser> findLikedUser = likedUserRepository.findByUserAndLike(findUser, findLike);
         System.out.println(findLikedUser.isPresent());
         if (findLikedUser.isPresent()) {
             if (likedDto.isLiked()) {
-                findLike.decreaseCount();
+                findLike.increaseCount();
                 findLikedUser.get().changeLiked();
             }
             else{
-                findLike.increaseCount();
+                findLike.decreaseCount();
                 findLikedUser.get().changeLiked();
             }
 
         }
         else {
             findLike.increaseCount();
-            LikedUser likedUser = LikedUser.of(false, findUser, findLike);
+            LikedUser likedUser = LikedUser.of(true, findUser, findLike);
             likedUserRepository.save(likedUser);
         }
 
     }
+    public boolean findLike(String userId , long diaryId) {
+        Optional<Boolean> likedByUserId = likedUserRepository.findLikedByUserId(userId , diaryId);
+        if(likedByUserId.isPresent()) {
+            return likedByUserId.get();
+        }
+
+        log.info("likedByUserId: {}", likedByUserId);
+        return false ;
+
+
+    }
+
     
 }
