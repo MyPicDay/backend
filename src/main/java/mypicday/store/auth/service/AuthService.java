@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.auth.dto.LoginRequest;
 import mypicday.store.auth.dto.SignupRequest;
+import mypicday.store.auth.dto.TokenDto;
+import mypicday.store.auth.entity.RefreshToken;
 import mypicday.store.auth.jwt.JwtProvider;
+import mypicday.store.auth.repository.RefreshTokenRepository;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
@@ -43,8 +47,9 @@ public class AuthService {
     /**
      * 로그인
      */
-    public String login(LoginRequest dto) {
+    public TokenDto login(LoginRequest dto, String deviceId) {
         log.info("[로그인] 서비스 호출 : 이메일={}", dto.getEmail());
+        String keyId = dto.getEmail() + "-" + deviceId;
 
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> {
@@ -58,7 +63,15 @@ public class AuthService {
         }
 
         log.info("[로그인] 완료 : 이메일={}", dto.getEmail());
-        return jwtProvider.generateToken(user.getEmail());
+        String accessToken = jwtProvider.generateAccessToken(user.getEmail());
+        String refreshToken = jwtProvider.generateRefreshToken();
+
+        RefreshToken refreshTokenEntity = new RefreshToken(keyId, refreshToken);
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        log.info("[JWT Refresh Token 저장 완료] key={}, refreshToken={}", keyId, refreshToken);
+
+        return new TokenDto(accessToken, refreshToken);
     }
 }
 
