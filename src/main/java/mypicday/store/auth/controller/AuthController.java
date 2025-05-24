@@ -110,7 +110,19 @@ public class AuthController {
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails user, HttpServletRequest request) {
         String key = user.getEmail() + "-" + request.getHeader("Device-Id");
         refreshTokenRepository.deleteById(key);
-        return ResponseEntity.ok("로그아웃 완료");
+
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body("로그아웃 완료");
+
     }
 
 }
