@@ -1,8 +1,8 @@
 package mypicday.store.diary.controller;
 
 import lombok.RequiredArgsConstructor;
-import mypicday.store.diary.service.DiaryService;
 import mypicday.store.diary.dto.response.DiaryResponse;
+import mypicday.store.diary.service.DiaryService;
 import mypicday.store.global.config.CustomUserDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +20,8 @@ public class DiaryController {
 
     @GetMapping
     public ResponseEntity<Page<DiaryResponse>> getDiaries(
-            Pageable pageable,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal CustomUserDetails user,
+            Pageable pageable
     ) {
         Page<DiaryResponse> diaries = diaryService.findDiaries(user.getId(), pageable);
         return ResponseEntity.ok(diaries);

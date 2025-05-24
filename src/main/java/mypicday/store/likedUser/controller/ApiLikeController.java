@@ -29,8 +29,15 @@ public class ApiLikeController {
     }
 
    @GetMapping("/diary/{diaryId}")
-    public ResponseEntity<ResponseLikeCountDto> DiaryLikesCount(@PathVariable Long diaryId) {
-        log.info("Diary Id = {} " , diaryId);
-        return new ResponseEntity<>(new ResponseLikeCountDto(diaryService.findLikeCount(diaryId)) , HttpStatusCode.valueOf(200));
+    public ResponseEntity<ResponseLikeCountDto> DiaryLikesCount(@PathVariable Long diaryId , @AuthenticationPrincipal CustomUserDetails customUserDetails)  {
+
+       String findId = customUserDetails.getId();
+       boolean like = likedUserService.findLike(findId , diaryId);
+       Long likeCount = diaryService.findLikeCount(diaryId);
+       log.info("Find like count: {}", likeCount);
+       log.info("Find like like: {}", like);
+       ResponseLikeCountDto responseLikeCountDto = new ResponseLikeCountDto(likeCount, like);
+
+       return new ResponseEntity<>(responseLikeCountDto , HttpStatusCode.valueOf(200));
     }
 }

@@ -1,19 +1,30 @@
 package mypicday.store.auth.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.auth.dto.LoginRequest;
 import mypicday.store.auth.dto.SignupRequest;
+import mypicday.store.auth.dto.TokenDto;
+import mypicday.store.auth.dto.UserInfo;
+import mypicday.store.auth.dto.response.LoginResponse;
+import mypicday.store.auth.entity.RefreshToken;
+import mypicday.store.auth.jwt.JwtProvider;
+import mypicday.store.auth.repository.RefreshTokenRepository;
 import mypicday.store.auth.service.AuthService;
+import mypicday.store.global.config.CustomUserDetails;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -22,6 +33,8 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtProvider jwtProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     /*
     * 회원가입
@@ -43,19 +56,79 @@ public class AuthController {
     * 로그인
     * */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest dto) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest dto, HttpServletRequest request) {
+        String deviceId = request.getHeader("Device-Id");
         log.info("[로그인] 요청 수신: 이메일={}", dto.getEmail());
 
         try {
-            String token = authService.login(dto);
+            TokenDto tokens = authService.login(dto, deviceId);
+            UserInfo userInfo = authService.getUserInfoByEmail(dto.getEmail());
             log.info("[로그인] 성공 : 이메일={}", dto.getEmail());
+
+            ResponseCookie responseCookie = ResponseCookie.from("refreshToken",tokens.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(TimeUnit.DAYS.toSeconds(7))
+                    .sameSite("None")
+                    .build();
+
+            LoginResponse loginResponse = new LoginResponse("로그인 성공", userInfo);
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body("로그인 성공");
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken())
+                    .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                    .body(loginResponse);
         } catch (RuntimeException e) {
             log.warn("[로그인] 실패 : {}", e.getMessage());
             return ResponseEntity.status(401).body("로그인 실패: " + e.getMessage());
         }
     }
+
+    /*
+     * access token 재발급
+     * */
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(HttpServletRequest request) {
+        String refreshToken = request.getHeader("Cookie").split("=")[1];
+
+        // refreshToken 유효성 검사
+        if (!jwtProvider.validateToken(refreshToken)) {
+            refreshTokenRepository.deleteByRefreshToken(refreshToken);
+            return ResponseEntity.status(401).body("Refresh Token 만료됨");
+        }
+
+        // 저장된 refreshToken에서 email 추출
+        RefreshToken tokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("저장된 리프레시 토큰 없음"));
+
+        String email = tokenEntity.getKey().split("-")[0];
+
+        // 새 Access Token 발급
+        String newAccessToken = jwtProvider.generateAccessToken(email);
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + newAccessToken)
+                .body("토큰 재발급 성공");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails user, HttpServletRequest request) {
+        String key = user.getEmail() + "-" + request.getHeader("Device-Id");
+        refreshTokenRepository.deleteById(key);
+
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body("로그아웃 완료");
+
+    }
+
 }
 
