@@ -1,10 +1,8 @@
 package mypicday.store.diary.controller;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.diary.dto.DiaryDto;
-import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.service.DiaryService;
 import mypicday.store.global.config.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
@@ -57,25 +55,5 @@ public class ApiDiaryController {
 
         diaryService.save(userId, diaryDto);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/diary")
-    public ResponseEntity<Long> Diary(@ModelAttribute DiaryDto diaryDto ,@AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
-        String userId= customUserDetails.getId();
-        List<String> images = new ArrayList<>();
-
-        for(MultipartFile file : diaryDto.getImages()){
-            if (!file.isEmpty()) {
-                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get(UPLOAD_DIRECTORY + "/" + fileName);
-                Files.copy(file.getInputStream(), path);  // 현재는 서버 로컬에 저장
-                images.add(fileName);
-            }
-        }
-        diaryDto.setAllImages(images);
-
-        Diary diary = diaryService.save(userId , diaryDto);
-
-        return ResponseEntity.ok(diary.getId());
     }
 }
