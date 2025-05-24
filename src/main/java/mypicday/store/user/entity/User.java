@@ -25,6 +25,16 @@ public class User extends BaseEntity {
    // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
     private String nickname;
 
+    @Column(nullable = true)
+    private String avatar;
+
+    public User(String email, String password, String nickname, String avatar) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+        this.avatar = avatar;
+    }
+
     public User(String email, String password, String nickname) {
         this.email = email;
         this.password = password;

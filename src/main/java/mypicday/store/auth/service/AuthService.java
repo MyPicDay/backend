@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mypicday.store.auth.dto.LoginRequest;
 import mypicday.store.auth.dto.SignupRequest;
 import mypicday.store.auth.dto.TokenDto;
+import mypicday.store.auth.dto.UserInfo;
 import mypicday.store.auth.entity.RefreshToken;
 import mypicday.store.auth.jwt.JwtProvider;
 import mypicday.store.auth.repository.RefreshTokenRepository;
@@ -72,6 +73,18 @@ public class AuthService {
         log.info("[JWT Refresh Token 저장 완료] key={}, refreshToken={}", keyId, refreshToken);
 
         return new TokenDto(accessToken, refreshToken);
+    }
+
+    public UserInfo getUserInfoByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        return new UserInfo(
+                String.valueOf(user.getId()),
+                user.getEmail(),
+                user.getNickname(),
+                user.getAvatar()
+        );
     }
 }
 

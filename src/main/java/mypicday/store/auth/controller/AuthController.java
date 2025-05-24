@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import mypicday.store.auth.dto.LoginRequest;
 import mypicday.store.auth.dto.SignupRequest;
 import mypicday.store.auth.dto.TokenDto;
+import mypicday.store.auth.dto.UserInfo;
+import mypicday.store.auth.dto.response.LoginResponse;
 import mypicday.store.auth.entity.RefreshToken;
 import mypicday.store.auth.jwt.JwtProvider;
 import mypicday.store.auth.repository.RefreshTokenRepository;
@@ -60,6 +62,7 @@ public class AuthController {
 
         try {
             TokenDto tokens = authService.login(dto, deviceId);
+            UserInfo userInfo = authService.getUserInfoByEmail(dto.getEmail());
             log.info("[로그인] 성공 : 이메일={}", dto.getEmail());
 
             ResponseCookie responseCookie = ResponseCookie.from("refreshToken",tokens.getRefreshToken())
@@ -70,10 +73,12 @@ public class AuthController {
                     .sameSite("None")
                     .build();
 
+            LoginResponse loginResponse = new LoginResponse("로그인 성공", userInfo);
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken())
                     .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                    .body("로그인 성공");
+                    .body(loginResponse);
         } catch (RuntimeException e) {
             log.warn("[로그인] 실패 : {}", e.getMessage());
             return ResponseEntity.status(401).body("로그인 실패: " + e.getMessage());
