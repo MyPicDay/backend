@@ -1,27 +1,20 @@
 package mypicday.store.diary.dto;
 
 import lombok.Getter;
+import mypicday.store.user.entity.User;
 
-/**
- * @author : User
- * @packageName : mypicday.diary.dto
- * @fileName : UserDTO
- * @description :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 25. 5. 19.        User       최초 생성
- */
-// TODO 임시 (삭제 예정)
 @Getter
 public class UserDTO {
-    private long userId;
+    private String userId;
     private String username;
-    private String profileImageUrl;
 
-    public UserDTO(long userId, String username, String profileImageUrl) {
+    // TODO 추후 User 엔티티 username 필드 추가하던지 닉네임만 남기던지 필요
+    private UserDTO(String userId, String username) {
         this.userId = userId;
         this.username = username;
-        this.profileImageUrl = profileImageUrl;
+    }
+
+    public static UserDTO from(User user) {
+        return new UserDTO(user.getId(), user.getNickname());
     }
 }
