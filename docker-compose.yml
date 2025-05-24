@@ -2,13 +2,47 @@
 services:
   db:
     image: mysql:8.0
-    container_name: mypicday-mysql
+    container_name: dev-mypicday-mysql
     ports:
-      - "9913:3306" # MySQL 포트를 환경 변수로 관리
+      - "9915:3306" # MySQL 포트를 환경 변수로 관리
     profiles:
       - "dev"
     environment:
       MYSQL_ROOT_PASSWORD: ${DEV_DB_PASSWORD}
+      MYSQL_DATABASE: mypicday
+    volumes:
+      - dev-mypicday-data:/var/lib/mysql
+    networks:
+      - dev-mypicday-network
+  web:
+    image: mypicday:latest
+    build:
+      context: .
+    container_name: mypicday-web
+    ports:
+      - "80:8080" # 웹 포트를 환경 변수로 관리
+    profiles:
+      - "prod"
+    environment:
+      PROFILE: prod
+      PROD_DB_URL: ${PROD_DB_URL}
+      PROD_DB_USERNAME: ${PROD_DB_USERNAME}
+      PROD_DB_PASSWORD: ${PROD_DB_PASSWORD}
+      JWT_KEY: ${JWT_KEY}
+    depends_on:
+      - prod-db
+    networks:
+      - mypicday-network
+
+  prod-db:
+    image: mysql:8.0
+    container_name: mypicday2-mysql
+    ports:
+      - "9914:3306" # MySQL 포트를 환경 변수로 관리
+    profiles:
+      - "prod"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PROD_DB_PASSWORD}
       MYSQL_DATABASE: mypicday
     volumes:
       - mypicday-data:/var/lib/mysql
@@ -17,7 +51,10 @@ services:
 
 volumes:
   mypicday-data:
+  dev-mypicday-data:
 
 networks:
   mypicday-network:
+    driver: bridge
+  dev-mypicday-network:
     driver: bridge

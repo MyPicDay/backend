@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,6 +63,9 @@ public class JwtFilter extends OncePerRequestFilter {
                             user.getId(), user.getEmail());
                 }else{
                     log.warn("[JWT 필터] 토큰 유효성 검사 실패");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Access token has expired.");
+                    return;
                 }
             }catch (Exception e){
                 log.error("[JWT 필터] 토큰 처리 중 오류 발생 : {}", e.getMessage());

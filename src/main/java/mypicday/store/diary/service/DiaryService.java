@@ -29,6 +29,7 @@ public class DiaryService {
 
     public Diary save(String userID , DiaryDto diaryDto) {
         Optional<User> user = userRepository.findById(userID);
+
         if (user.isEmpty()) {
             return null;
         }

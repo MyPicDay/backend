@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
-
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -29,8 +27,6 @@ public class ApiLikeController {
         String userId = customUserDetails.getId();
         likedUserService.LikedUser(userId , likedDto);
     }
-
-
 
    @GetMapping("/diary/{diaryId}")
     public ResponseEntity<ResponseLikeCountDto> DiaryLikesCount(@PathVariable Long diaryId , @AuthenticationPrincipal CustomUserDetails customUserDetails)  {

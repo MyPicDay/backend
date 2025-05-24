@@ -20,26 +20,46 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final long validityInMs = 3600000; // 1시간
+    private final long accessValidityInMs = 3600000; // 1시간
+    private final long refreshValidityInMs = 36000000; // 10시간
 
     /*
-    * JWT 생성
+    * JWT Access Token 생성
     * */
-    public String generateToken(String email) {
-        log.info("[JWT 생성] 이메일 : {}", email);
+    public String generateAccessToken(String email) {
+        log.info("[JWT Access Token 생성] 이메일 : {}", email);
 
       Claims claims = Jwts.claims().setSubject(email);
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + validityInMs);
+        Date expiry = new Date(now.getTime() + accessValidityInMs);
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
 
         claims.put("roles", List.of("ROLE_USER"));
 
-        log.debug("[JWT 생성 완료] 만료시간 : {}", expiry);
+        log.debug("[JWT Access Token 생성] 완료 : 만료시간={}", expiry);
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key)
+                .compact();
+    }
+
+
+    /*
+     * JWT Refresh Token 생성
+     * */
+    public String generateRefreshToken() {
+        log.info("[JWT Refresh Token 생성] 생성 시작");
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + refreshValidityInMs);
+        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+
+        log.debug("[JWT Refresh Token 생성] 완료 : 만료시간={}", expiry);
+
+        return Jwts.builder()
                 .setExpiration(expiry)
                 .signWith(key)
                 .compact();
@@ -86,7 +106,7 @@ public class JwtProvider {
         }
     }
 
-    private String cleanToken(String token) {
+    public String cleanToken(String token) {
         if (token != null && token.startsWith("Bearer ")) {
             return token.substring(7);
         }
