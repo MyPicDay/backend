@@ -1,4 +1,4 @@
-package mypicday.store.comment.dto;
+package mypicday.store.comment.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
