@@ -3,11 +3,11 @@ package mypicday.store.diary.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.diary.dto.DiaryDto;
+import mypicday.store.diary.dto.response.UserDiaryDto;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.service.DiaryService;
 import mypicday.store.global.config.CustomUserDetails;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +17,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,11 +28,16 @@ public class ApiDiaryController {
 
     private final DiaryService diaryService;
 
-
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
         String userId = customUserDetails.getId();
+        Optional<Diary> diary = diaryService.updateDiary(userId, diaryDto);
+        if (diary.isPresent()) {
+            return ResponseEntity.ok(Map.of("id", userId));
+        }
+
+        
         List<String> images = new ArrayList<>();
 
         // uploads 폴더 존재 확인 및 생성
@@ -42,7 +45,6 @@ public class ApiDiaryController {
         if (Files.notExists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
-
         if (diaryDto.getImages() != null) {
             for (MultipartFile file : diaryDto.getImages()) {
                 if (!file.isEmpty()) {
@@ -56,10 +58,26 @@ public class ApiDiaryController {
         }
 
         diaryDto.setAllImages(images);
-        log.info("diaryDto: {}", diaryDto.getAllImages());
+
 
         diaryService.save(userId, diaryDto);
         return ResponseEntity.ok(Map.of("id", userId));
     }
 
+
+    @GetMapping("/diary")
+    public ResponseEntity<UserDiaryDto> editDiary(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date ,
+                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        log.info("editDiary: date: {}", date);
+        String userId = customUserDetails.getId();
+        UserDiaryDto userDiary = diaryService.findUserDiary(userId, date);
+        log.info("userDiary: {}", userDiary);
+        return ResponseEntity.ok(userDiary);
+
+    }
+
+
+
+
 }
+
