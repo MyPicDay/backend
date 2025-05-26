@@ -54,4 +54,13 @@ public class Diary extends BaseEntity {
         this.title = title;
         this.user = user;
     }
+
+    public Diary update(String title , String content, Visibility status,  List<String> imageList) {
+        this.title = title;
+        this.content = content;
+        this.status = status;
+        this.imageList = imageList;
+      //  this.active();
+        return this;
+    }
 }
