@@ -3,8 +3,11 @@ package mypicday.store.diary.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.diary.dto.DiaryDto;
+import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.service.DiaryService;
 import mypicday.store.global.config.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -26,8 +30,9 @@ public class ApiDiaryController {
 
     private final DiaryService diaryService;
 
+
     @PostMapping("/diary")
-    public ResponseEntity<String> Diary(@ModelAttribute DiaryDto diaryDto,
+    public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
         String userId = customUserDetails.getId();
         List<String> images = new ArrayList<>();
@@ -54,6 +59,7 @@ public class ApiDiaryController {
         log.info("diaryDto: {}", diaryDto.getAllImages());
 
         diaryService.save(userId, diaryDto);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("id", userId));
     }
+
 }
