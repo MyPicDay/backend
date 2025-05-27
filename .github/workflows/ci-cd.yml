@@ -39,4 +39,4 @@ jobs:
           echo "${{ secrets.DEV_EC2_SSH_PRIVATE_KEY_DEV }}" > private_key.pem
           chmod 400 private_key.pem
           
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.DEV_EC2_PUBLIC_IP }} "cd /home/ec2-user/backend && sudo bash deploy.sh" || true
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.DEV_EC2_PUBLIC_IP }} "cd /home/ec2-user/backend && sudo bash deploy.sh"
