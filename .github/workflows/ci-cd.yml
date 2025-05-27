@@ -31,7 +31,7 @@ jobs:
       - name: Configure AWS Credentials for OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/MyPicDayDeployDev
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/GitHubActionsDeploymentRole
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to EC2 (Dev)
