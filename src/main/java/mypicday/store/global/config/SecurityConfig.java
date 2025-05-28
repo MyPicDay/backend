@@ -30,8 +30,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000",
                 "https://*.mypicday.store",
-                "https://mypicday.store"
-                ));
+                "https://mypicday.store",
+                "http://dev.mypicday.store:8080" // 임시용
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
