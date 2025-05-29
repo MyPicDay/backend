@@ -2,10 +2,12 @@ package mypicday.store.diary.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NoArgsConstructor;import mypicday.store.comment.entity.Comment;
 import mypicday.store.global.entity.BaseEntity;
 import mypicday.store.like.entity.LikeEntity;
 import mypicday.store.user.entity.User;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.EnumType.*;
@@ -25,11 +27,9 @@ public class Diary extends BaseEntity {
     @Column(name = "diary_id")
     private Long id;
 
-
     @ManyToOne(fetch = LAZY )
     @JoinColumn(name = "id")
     private User user;
-
 
     private String title;
     private String content;
@@ -46,6 +46,10 @@ public class Diary extends BaseEntity {
     @Column(name = "image", length = 100000)
     private List<String> imageList;
 
+    @OneToMany(mappedBy = "diary" , cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
+
+
     public Diary(String content, Visibility status, LikeEntity like, List<String> imageList, String title, User user) {
         this.content = content;
         this.status = status;
@@ -60,7 +64,6 @@ public class Diary extends BaseEntity {
         this.content = content;
         this.status = status;
         this.imageList = imageList;
-      //  this.active();
         return this;
     }
 }
