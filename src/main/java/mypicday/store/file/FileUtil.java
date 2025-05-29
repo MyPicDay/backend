@@ -218,45 +218,26 @@ public class FileUtil {
     public String getContentType(String filename) {
         String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
 
-        switch (extension) {
-            case "jpg":
-            case "jpeg":
-                return "image/jpeg";
-            case "png":
-                return "image/png";
-            case "gif":
-                return "image/gif";
-            case "webp":
-                return "image/webp";
-            case "bmp":
-                return "image/bmp";
-            case "svg":
-                return "image/svg+xml";
-            case "pdf":
-                return "application/pdf";
-            case "txt":
-                return "text/plain";
-            case "html":
-                return "text/html";
-            case "css":
-                return "text/css";
-            case "js":
-                return "application/javascript";
-            case "json":
-                return "application/json";
-            case "xml":
-                return "application/xml";
-            case "mp4":
-                return "video/mp4";
-            case "mp3":
-                return "audio/mpeg";
-            case "wav":
-                return "audio/wav";
-            case "zip":
-                return "application/zip";
-            default:
-                return "application/octet-stream";
-        }
+        return switch (extension) {
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "gif" -> "image/gif";
+            case "webp" -> "image/webp";
+            case "bmp" -> "image/bmp";
+            case "svg" -> "image/svg+xml";
+            case "pdf" -> "application/pdf";
+            case "txt" -> "text/plain";
+            case "html" -> "text/html";
+            case "css" -> "text/css";
+            case "js" -> "application/javascript";
+            case "json" -> "application/json";
+            case "xml" -> "application/xml";
+            case "mp4" -> "video/mp4";
+            case "mp3" -> "audio/mpeg";
+            case "wav" -> "audio/wav";
+            case "zip" -> "application/zip";
+            default -> "application/octet-stream";
+        };
     }
 
     /**
