@@ -41,17 +41,7 @@ public class DiaryService {
         return diaryRepository.save(diary);
     }
 
-/*    public Page<DiaryResponse> findDiaries(
-            final String userId,
-            final Pageable pageable
-    ) {
-        //TODO 전체 목록 조회 정렬 조건 (1. 본인, 2. 친구, 3. 제3자)
-        Page<DiaryResponse> response = diaryRepository.findAllByAuthorId(
-                userId,
-                pageable
-        ).map(DiaryResponse::from);
-        return response;
-    }*/
+
 
     public Long findLikeCount(Long diaryId){
         Optional<Diary> findLike = diaryRepository.findById(diaryId);
