@@ -4,6 +4,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.diary.dto.DiaryDto;
+
 import mypicday.store.diary.dto.response.UserDiaryDto;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.entity.Visibility;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import java.util.List;
+
 import java.util.Optional;
 
 @Transactional
@@ -53,7 +56,12 @@ public class DiaryService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(23, 59, 59);
         Optional<Diary> diary = diaryRepository.findUserIdAndCreatedAt(userId, startOfDay, endOfDay);
-        return diary.map(value -> new UserDiaryDto(value.getTitle(), value.getContent(), value.getStatus(), value.getImageList())).orElseGet(UserDiaryDto::new);
+
+        if (diary.isPresent()) {
+            return  new UserDiaryDto(diary.get().getTitle() , diary.get().getContent() , diary.get().getStatus() , diary.get().getImageList());
+        }
+        return new UserDiaryDto();
+
     }
 
     public Optional<Diary> updateDiary(String userId , DiaryDto diaryDto) {
@@ -63,6 +71,7 @@ public class DiaryService {
         diary.ifPresent(value -> value.update(diaryDto.getTitle() , diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) , diaryDto.getAllImages()));
         return diary ;
     }
+
     @Transactional(readOnly = true)
     public List<Diary> findAllDiaries() {
         return diaryRepository.findAllDiaries();
@@ -77,4 +86,5 @@ public class DiaryService {
     public List<Diary> findAllReplies(Long diaryId) {
         return diaryRepository.findAllReplies(diaryId);
     }
+
 }
