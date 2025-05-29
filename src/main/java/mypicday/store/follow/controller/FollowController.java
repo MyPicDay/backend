@@ -1,14 +1,12 @@
 package mypicday.store.follow.controller;
 
 import lombok.RequiredArgsConstructor;
-import mypicday.store.follow.entity.Follow;
 import mypicday.store.follow.entity.FollowId;
 import mypicday.store.follow.repository.FollowRepository;
 import mypicday.store.follow.service.FollowService;
 import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
