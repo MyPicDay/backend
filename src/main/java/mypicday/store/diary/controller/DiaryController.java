@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiaryController {
     private final DiaryService diaryService;
 
-    @GetMapping
+  /*  @GetMapping
     public ResponseEntity<Page<DiaryResponse>> getDiaries(
             @AuthenticationPrincipal CustomUserDetails user,
             Pageable pageable
     ) {
         Page<DiaryResponse> diaries = diaryService.findDiaries(user.getId(), pageable);
         return ResponseEntity.ok(diaries);
-    }
+    }*/
 }

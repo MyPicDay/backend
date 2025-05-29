@@ -2,6 +2,7 @@ package mypicday.store.comment.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.dto.request.CommentDto;
 import mypicday.store.comment.dto.reponse.ResponseCommentUser;
 import mypicday.store.comment.dto.request.ReplyDto;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequiredArgsConstructor
