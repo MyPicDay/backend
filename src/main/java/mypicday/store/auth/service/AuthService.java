@@ -9,6 +9,7 @@ import mypicday.store.auth.dto.UserInfo;
 import mypicday.store.auth.entity.RefreshToken;
 import mypicday.store.auth.jwt.JwtProvider;
 import mypicday.store.auth.repository.RefreshTokenRepository;
+import mypicday.store.character.service.CharacterService;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final CharacterService characterService;
 
     /**
      * 회원가입
@@ -34,13 +36,15 @@ public class AuthService {
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             log.warn("[회원가입] 이미 존재하는 이메일 요청 : 이메일={}", dto.getEmail());
             throw new RuntimeException("이미 존재하는 이메일입니다.");
-
         }
+
         User user = new User(
                 dto.getEmail(),
                 passwordEncoder.encode(dto.getPassword()),
                 dto.getNickname()
         );
+        String avatarUrl = characterService.getFixedCharacterImageUrl(dto.getFixedCharacterId());
+        user.changeAvatar(avatarUrl);
         userRepository.save(user);
         log.info("[회원 가입] 완료 : 이메일={}, 닉네임={}", dto.getEmail(), dto.getNickname());
     }

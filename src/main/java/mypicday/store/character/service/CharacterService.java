@@ -1,6 +1,7 @@
 package mypicday.store.character.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mypicday.store.character.entity.Character;
 import mypicday.store.character.enums.CharacterCreationType;
 import mypicday.store.character.repository.CharacterRepository;
@@ -12,10 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
+
+import static mypicday.store.file.FileConstants.CHARACTERS_BASE_DIR_NAME;
+import static mypicday.store.file.FileConstants.FIXED_CHARACTER_SUB_DIR_NAME;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class CharacterService {
 
     private final CharacterRepository characterRepository;
@@ -26,10 +32,12 @@ public class CharacterService {
         return characterRepository.findByType(CharacterCreationType.FIXED);
     }
 
-    // ID로 캐릭터 조회 (예시)
     public Character getCharacterById(Long id) {
         return characterRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Character not found with id: " + id)); // 간단한 예외 처리, 실제 프로젝트에서는 커스텀 예외 사용 권장
+                .orElseThrow(() -> {
+                    log.error("Character not found with id: {}", id);
+                    return new IllegalArgumentException("Character not found with id: " + id);
+                });
     }
 
     /**
@@ -67,6 +75,23 @@ public class CharacterService {
         // FIXED 타입 캐릭터는 userId가 필요 없음 (null 전달)
         return fileUtil.loadCharacterImageAsResource(CharacterCreationType.FIXED, null, fileName);
     }
+
+    public boolean isCharacterFixedImageExists(Long characterId) {
+        Optional<Character> character = characterRepository.findById(characterId);
+        return character.isPresent() && character.get().getType() == CharacterCreationType.FIXED;
+    }
+
+    public String getFixedCharacterImageUrl(Long characterId) {
+        Optional<Character> character = characterRepository.findById(characterId);
+        if (character.isPresent() && character.get().getType() == CharacterCreationType.FIXED) {
+            return CHARACTERS_BASE_DIR_NAME + "/" + FIXED_CHARACTER_SUB_DIR_NAME + "/" + character.get().getImageUrl();
+        } else {
+            log.warn("고정 캐릭터 이미지가 존재하지 않거나 잘못된 캐릭터 ID입니다: {}", characterId);
+            return null;
+        }
+    }
+
+
 
     // 향후 AI 생성 캐릭터 이미지 로드 위한 메소드 (예시)
     // public Resource getAiCharacterImageAsResource(Long userId, String fileName) {
