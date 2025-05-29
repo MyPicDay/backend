@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import mypicday.store.character.enums.CharacterCreationType;
+
 @Slf4j
 @Component
 public class FileUtil {
@@ -258,27 +260,41 @@ public class FileUtil {
     }
 
     /**
-     * 캐릭터 타입별 업로드 디렉토리 경로 생성 (고정, AI 등)
-     * 예: characters/fixed 또는 characters/ai_user_id
-     * @param typeDir 캐릭터 타입에 따른 하위 폴더명 (예: "fixed", "ai_user_id")
+     * 캐릭터 타입별 업로드 디렉토리 경로 생성.
+     * FIXED 경우: characters/fixed
+     * AI_GENERATED 경우: characters/{userId}
+     * @param type 캐릭터 생성 타입
+     * @param userId 사용자 ID (AI_GENERATED 타입에 필요)
      * @return 캐릭터 타입별 업로드 디렉토리 경로
      */
-    private Path getCharacterUploadDir(String typeDir) {
-        return Paths.get(FileConstants.CHARACTERS_BASE_DIR_NAME).resolve(typeDir);
+    private Path getCharacterUploadDir(CharacterCreationType type, String userId) {
+        String subDir;
+        if (type == CharacterCreationType.FIXED) {
+            subDir = FileConstants.FIXED_CHARACTER_SUB_DIR_NAME;
+        } else if (type == CharacterCreationType.AI_GENERATED) {
+            if (userId == null || userId.trim().isEmpty()) {
+                throw new IllegalArgumentException("AI 생성 캐릭터 저장을 위한 사용자 ID가 필요합니다.");
+            }
+            subDir = userId; // userId를 하위 디렉토리명으로 사용
+        } else {
+            throw new IllegalArgumentException("지원하지 않는 캐릭터 생성 타입입니다: " + type);
+        }
+        return Paths.get(FileConstants.CHARACTERS_BASE_DIR_NAME).resolve(subDir);
     }
 
     /**
-     * 캐릭터 이미지를 저장하고 "typeDir/실제파일명" 형태로 반환
+     * 캐릭터 이미지를 저장하고 실제 저장된 파일명(DB에 기록될 순수 파일명)을 반환합니다.
      * @param file 저장할 파일
-     * @param typeDir 캐릭터 타입에 따른 하위 폴더명 (예: "fixed" 또는 사용자 ID 기반의 "ai_user_id")
+     * @param type 캐릭터 생성 타입
+     * @param userId 사용자 ID (AI_GENERATED 타입에 필요)
      * @param desiredName 저장 시 사용할 파일명 (확장자 포함). null일 경우 원본 파일명 기반으로 유니크하게 생성.
-     * @return "typeDir/실제파일명" 형태의 저장된 파일 경로 (characters 기준)
+     * @return 실제 저장된 파일명 (순수 파일명, 예: "image.png")
      */
-    public String saveCharacterImage(MultipartFile file, String typeDir, String desiredName) {
+    public String saveCharacterImage(MultipartFile file, CharacterCreationType type, String userId, String desiredName) {
         try {
-            Path characterTypeDir = getCharacterUploadDir(typeDir);
-            if (Files.notExists(characterTypeDir)) {
-                Files.createDirectories(characterTypeDir);
+            Path characterStorageDir = getCharacterUploadDir(type, userId);
+            if (Files.notExists(characterStorageDir)) {
+                Files.createDirectories(characterStorageDir);
             }
 
             if (file.isEmpty()) {
@@ -292,37 +308,40 @@ public class FileUtil {
                 actualFileName = generateUniqueFileName(Objects.requireNonNull(file.getOriginalFilename()));
             }
 
-            Path filePath = characterTypeDir.resolve(actualFileName);
+            Path filePath = characterStorageDir.resolve(actualFileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            log.info("캐릭터 이미지 저장 완료 - 타입: {}, 파일: {}", typeDir, actualFileName);
-            return typeDir + "/" + actualFileName; 
+            log.info("캐릭터 이미지 저장 완료 - 타입: {}, 사용자ID: {}, 파일: {}, 저장경로: {}", type, userId, actualFileName, characterStorageDir);
+            return actualFileName; // 이제 순수 파일명 반환
 
         } catch (IOException e) {
-            log.error("캐릭터 이미지 저장 실패 - 타입: {}, 오류: {}", typeDir, e.getMessage());
+            log.error("캐릭터 이미지 저장 실패 - 타입: {}, 사용자ID: {}, 오류: {}", type, userId, e.getMessage());
             throw new RuntimeException("캐릭터 이미지 저장에 실패했습니다.", e);
         }
     }
 
     /**
-     * 캐릭터 이미지 파일을 Resource로 로드
-     * @param imagePathWithTypeDir "typeDir/실제파일명" 형태 (예: "fixed/char1.png", "ai_user_id/char2.png")
+     * 캐릭터 이미지 파일을 Resource로 로드합니다.
+     * @param type 캐릭터 생성 타입
+     * @param userId 사용자 ID (AI_GENERATED 타입에 필요, FIXED 타입이면 null 또는 무시)
+     * @param fileName 로드할 순수 파일명 (예: "image.png")
      * @return Resource 객체
      */
-    public Resource loadCharacterImageAsResource(String imagePathWithTypeDir) {
+    public Resource loadCharacterImageAsResource(CharacterCreationType type, String userId, String fileName) {
         try {
-            Path filePath = Paths.get(FileConstants.CHARACTERS_BASE_DIR_NAME).resolve(imagePathWithTypeDir).normalize();
+            Path characterStorageDir = getCharacterUploadDir(type, userId);
+            Path filePath = characterStorageDir.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {
-                log.warn("캐릭터 이미지를 찾을 수 없거나 읽을 수 없습니다: {}", imagePathWithTypeDir);
-                throw new RuntimeException("캐릭터 이미지를 찾을 수 없거나 읽을 수 없습니다: " + imagePathWithTypeDir);
+                log.warn("캐릭터 이미지를 찾을 수 없거나 읽을 수 없습니다: {}", filePath);
+                throw new RuntimeException("캐릭터 이미지를 찾을 수 없거나 읽을 수 없습니다: " + filePath);
             }
         } catch (MalformedURLException e) {
-            log.error("캐릭터 이미지 로드 실패 - 경로: {}, 오류: {}", imagePathWithTypeDir, e.getMessage());
-            throw new RuntimeException("캐릭터 이미지 로드에 실패했습니다: " + imagePathWithTypeDir, e);
+            log.error("캐릭터 이미지 로드 실패 - 경로 조합 중 오류: type={}, userId={}, fileName={}, 오류: {}", type, userId, fileName, e.getMessage());
+            throw new RuntimeException("캐릭터 이미지 로드에 실패했습니다: " + fileName, e);
         }
     }
 }
