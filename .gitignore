@@ -39,3 +39,8 @@ out/
 
 .env
 
+uploads/
+
+characters/
+
+!characters/fixed/
