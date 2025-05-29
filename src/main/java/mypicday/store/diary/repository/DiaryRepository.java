@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("SELECT d.like.count FROM Diary d WHERE d.id = :diaryId")
@@ -24,6 +28,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
                                           @Param("endOfDay") LocalDateTime endOfDay);
 
+
     @Query("select d from Diary d join fetch d.user left join fetch d.comments where d.status != 'PRIVATE' order by d.createdAt desc")
     List<Diary> findAllDiaries();
 
@@ -33,4 +38,5 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("select d from Diary d join fetch d.user left join fetch d.comments c where d.id = :diaryId and c.parent is not null")
     List<Diary> findAllReplies(Long diaryId);
+
 }
