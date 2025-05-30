@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/users/**").permitAll() //임시
+                        .requestMatchers("/api/auth/**").permitAll() 
                         .anyRequest().authenticated()
                 )
                 .sessionManagement((sessionManagement) ->
