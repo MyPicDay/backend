@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mypicday.store.follow.entity.Follow;
 import mypicday.store.global.entity.BaseEntity;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +30,19 @@ public class User extends BaseEntity {
 
     private String avatar;
 
+    public void changeAvatar(String avatar) {
+        this.avatar = avatar;
+
+    }
+
+    //내가 팔로잉 하는 유저
+    @OneToMany(mappedBy = "follower")
+    private List<Follow> following;
+
+    // 나를 팔로우 하고 있는 유저
+    @OneToMany(mappedBy = "following")
+    private List<Follow> followers;
+
     public User(String email, String password, String nickname, String avatar) {
         this.email = email;
         this.password = password;
@@ -40,7 +56,9 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
-    public void changeAvatar(String avatar) {
-        this.avatar = avatar;
+
+    public User(List<Follow> following, List<Follow> followers) {
+        this.following = following;
+        this.followers = followers;
     }
 }

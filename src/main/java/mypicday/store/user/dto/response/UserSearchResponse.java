@@ -30,6 +30,12 @@ public class UserSearchResponse {
         this.isFollowing = isFollowing;
     }
 
+    public UserSearchResponse(User user, boolean isFollowing) {
+        this.userId = user.getId();
+        this.nickname = user.getNickname();
+        this.isFollowing = isFollowing;
+    }
+
     public static UserSearchResponse from(User user) {
         return new UserSearchResponse(
                 user.getId(),
