@@ -25,12 +25,12 @@ public class User extends BaseEntity {
     //@Column(name = "password", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화'")
     private String password;
 
-   // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
+    // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
     private String nickname;
 
     private String avatar;
 
-        public void changeAvatar(String avatar) {
+    public void changeAvatar(String avatar) {
         this.avatar = avatar;
 
     }
@@ -60,4 +60,5 @@ public class User extends BaseEntity {
     public User(List<Follow> following, List<Follow> followers) {
         this.following = following;
         this.followers = followers;
+    }
 }
