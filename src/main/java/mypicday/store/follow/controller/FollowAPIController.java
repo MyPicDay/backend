@@ -24,6 +24,7 @@ public class FollowAPIController {
 
 
 
+    @GetMapping
     public UserResponseDTO getUserSummary(@PathVariable String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
