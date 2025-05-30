@@ -6,14 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
-
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -39,7 +34,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     @Query("select d from Diary d where d.user.id = :userId and d.createdAt between :startOfDay and :endOfDay")
     Optional<Diary> findUserIdAndCreatedAt(@Param("userId") String userId,
                                           @Param("startOfDay") LocalDateTime startOfDay,
-
                                           @Param("endOfDay") LocalDateTime endOfDay);
 
 
@@ -52,5 +46,14 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("select d from Diary d join fetch d.user left join fetch d.comments c where d.id = :diaryId and c.parent is not null")
     List<Diary> findAllReplies(Long diaryId);
+
+    List<Diary> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(String userId,
+                                                                    LocalDateTime startOfMonth,
+                                                                    LocalDateTime endOfMonth);
+
+    // @Query("select d from Diary d left join fetch d.imageList where d.user.id = :userId and d.createdAt between :startOfMonth and :endOfMonth order by d.createdAt desc")
+    // List<Diary> findByUserIdAndCreatedAtBetweenWithImages(@Param("userId") String userId,
+    //                                                      @Param("startOfMonth") LocalDateTime startOfMonth,
+    //                                                      @Param("endOfMonth") LocalDateTime endOfMonth);
 
 }

@@ -28,7 +28,6 @@ public class User extends BaseEntity {
    // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
     private String nickname;
 
-    @Column(nullable = true)
     private String avatar;
 
     //내가 팔로잉 하는 유저
@@ -52,8 +51,13 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
+
     public User(List<Follow> following, List<Follow> followers) {
         this.following = following;
         this.followers = followers;
+
+    public void changeAvatar(String avatar) {
+        this.avatar = avatar;
+
     }
 }

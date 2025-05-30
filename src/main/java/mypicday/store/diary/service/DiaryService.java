@@ -1,10 +1,10 @@
 package mypicday.store.diary.service;
 
+import mypicday.store.diary.dto.response.DiaryResponse;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.diary.dto.DiaryDto;
-
 import mypicday.store.diary.dto.response.UserDiaryDto;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.entity.Visibility;
@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import java.time.YearMonth;
 import java.util.List;
-
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -87,4 +87,26 @@ public class DiaryService {
         return diaryRepository.findAllReplies(diaryId);
     }
 
+
+    public List<DiaryResponse> findMonthlyDiaries(String userId, int year, int month) {
+        // 해당 연월의 시작과 끝 날짜 계산
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+
+        // 해당 월의 다이어리들을 조회하고 DiaryResponse로 변환하여 반환
+            List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfMonth, endOfMonth);
+
+        return diaries.stream()
+                .map(diary -> new DiaryResponse(
+                        diary.getTitle(),
+                        diary.getId(),
+                        diary.getStatus(),
+                        diary.getContent(),
+                        diary.getUser().getNickname(),
+                        diary.getImageList(),
+                        diary.getComments().size(),
+                        diary.getCreatedAt().toLocalDate()))
+                .collect(Collectors.toList());
+    }
 }
