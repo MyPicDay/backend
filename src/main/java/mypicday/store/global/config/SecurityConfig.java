@@ -51,7 +51,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/diaries/images/{userId}/{fileName:.+}"
+                                "/api/diaries/images/{userId}/{fileName:.+}",
+                                "/api/characters/fixed/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
