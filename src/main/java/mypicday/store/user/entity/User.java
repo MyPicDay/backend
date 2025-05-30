@@ -30,6 +30,11 @@ public class User extends BaseEntity {
 
     private String avatar;
 
+        public void changeAvatar(String avatar) {
+        this.avatar = avatar;
+
+    }
+
     //내가 팔로잉 하는 유저
     @OneToMany(mappedBy = "follower")
     private List<Follow> following;
@@ -55,9 +60,4 @@ public class User extends BaseEntity {
     public User(List<Follow> following, List<Follow> followers) {
         this.following = following;
         this.followers = followers;
-
-    public void changeAvatar(String avatar) {
-        this.avatar = avatar;
-
-    }
 }
