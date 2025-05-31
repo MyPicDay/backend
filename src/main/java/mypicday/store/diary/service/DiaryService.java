@@ -42,10 +42,6 @@ public class DiaryService {
         return diaryRepository.countByUser_Id(userId);
     }
 
-    public int countUserDiaries(String userId) {
-        return diaryRepository.countByUser_Id(userId);
-    }
-
     public Diary save(String userID , DiaryDto diaryDto) {
         Optional<User> user = userRepository.findById(userID);
 
