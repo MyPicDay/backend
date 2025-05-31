@@ -1,6 +1,10 @@
 package mypicday.store.diary.service;
 
+import mypicday.store.comment.service.CommentService;
+import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
+import mypicday.store.diary.mapper.DiaryMapper;
+import mypicday.store.global.dto.RequestMetaInfo;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +34,8 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
 
     private final UserRepository userRepository;
+    private final CommentService commentService;
+    private final DiaryMapper diaryMapper;
 
     public int countUserDiaries(String userId) {
         return diaryRepository.countByUser_Id(userId);
@@ -112,5 +118,13 @@ public class DiaryService {
                         diary.getComments().size(),
                         diary.getCreatedAt().toLocalDate()))
                 .collect(Collectors.toList());
+    }
+
+    public DiaryDetailResponseDTO getDiaryDetail(Long diaryId, RequestMetaInfo metaInfo) {
+        Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new IllegalArgumentException("Diary not found"));
+        User user = diary.getUser();
+        int commentCount = commentService.commentCountByDiaryId(diaryId);
+        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo);
+        return diaryDetailResponseDTO;
     }
 }

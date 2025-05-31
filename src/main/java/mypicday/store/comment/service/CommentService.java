@@ -46,4 +46,8 @@ public class CommentService {
         return commentRepository.save(Comment.createReply(user , diary ,replyDto.getComment() , parentComment));
     }
 
+    public int commentCountByDiaryId(Long diaryId){
+        return commentRepository.countByDiary_Id(diaryId);
+    }
+
 }
