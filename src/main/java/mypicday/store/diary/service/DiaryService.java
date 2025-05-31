@@ -35,7 +35,6 @@ public class DiaryService {
 
     private final UserRepository userRepository;
     private final CommentService commentService;
-    private final DiaryMapper mapper;
     private final DiaryMapper diaryMapper;
 
     public int countUserDiaries(String userId) {
