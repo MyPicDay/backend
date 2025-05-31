@@ -1,17 +1,21 @@
 package mypicday.store.diary.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.comment.dto.reponse.ResponseCommentDto;
 import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
 import mypicday.store.diary.dto.DiaryDto;
+import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.dto.response.UserDiaryDto;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.service.DiaryService;
 import mypicday.store.file.FileUtil;
 import mypicday.store.global.config.CustomUserDetails;
+import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.global.util.RequestMetaMapper;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +38,7 @@ public class ApiDiaryController {
 
     private final DiaryService diaryService;
     private final FileUtil fileUtil;
+    private final RequestMetaMapper requestMetaMapper;
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
@@ -119,7 +124,13 @@ public class ApiDiaryController {
         return new ResponseEntity<>(userCommentsDto, HttpStatus.OK);
     }
 
+    @GetMapping("/diaries/{diaryId}")
+    public ResponseEntity<DiaryDetailResponseDTO> getDiaryDetail(HttpServletRequest request, @PathVariable Long diaryId) {
 
+        RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
+        DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(diaryId, requestMetaInfo);
+        return ResponseEntity.ok(detail);
+    }
 
 }
 
