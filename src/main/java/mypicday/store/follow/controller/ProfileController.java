@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("api/users/following")
+@RequestMapping("/api/profiles")
 @RequiredArgsConstructor
 public class ProfileController {
     private final FollowRepository followRepository;
@@ -37,6 +37,7 @@ public class ProfileController {
                 diaryCount,
                 followers,
                 followings
+
         );
     }
 }

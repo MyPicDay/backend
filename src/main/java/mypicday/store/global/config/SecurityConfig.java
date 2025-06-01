@@ -52,7 +52,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/diaries/images/{userId}/{fileName:.+}",
-                                "/api/characters/fixed/**"
+                                "/api/characters/fixed/**",
+                                "/api/follow/{userId}",
+                                "/api/users/{userid}/followers",
+                                "/api/followings/{userId}",
+                                "/api/users/following/{userId}",
+                                "/api/profiles/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
