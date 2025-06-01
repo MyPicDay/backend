@@ -1,14 +1,19 @@
 package mypicday.store.follow.controller;
 
+import com.sun.security.auth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import mypicday.store.follow.dto.UserProfileDTO;
 import mypicday.store.follow.dto.UserResponseDTO;
 import mypicday.store.follow.entity.Follow;
 import mypicday.store.follow.repository.FollowRepository;
+import mypicday.store.follow.service.FollowService;
+import mypicday.store.global.config.CustomUserDetails;
+import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,24 +23,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FollowerControllerDetail {
 
-    private final FollowRepository followRepository;
-    private final UserRepository userRepository;
+    private final FollowService followService;
 
-    // 내가 팔로우한 사람들
     @GetMapping("/{userId}/followings")
-    public List<UserResponseDTO> getFollowings(@PathVariable String userId) {
-        List<Follow> followings = followRepository.findByFollower_Id(userId);
-        return followings.stream()
-                .map(f -> new UserResponseDTO(f.getFollowing()))
-                .collect(Collectors.toList());
+    public ResponseEntity<List<UserProfileDTO>> getFollowers(@PathVariable String userId) {
+        List<UserProfileDTO> result = followService.getFollowers(userId);
+        return ResponseEntity.ok(result);
     }
 
-    // 나를 팔로우한 사람들
-    @GetMapping("/{userId}/followers")
-    public List<UserResponseDTO> getFollowers(@PathVariable String userId) {
-        List<Follow> followers = followRepository.findByFollowing_Id(userId);
-        return followers.stream()
-                .map(f -> new UserResponseDTO(f.getFollower()))
-                .collect(Collectors.toList());
+    @PostMapping("/{targetUserId}/follow")
+    public ResponseEntity<Void> follow(@PathVariable String targetUserId,
+                                       @AuthenticationPrincipal UserDetails user) {
+        followService.follow(user.getUsername(), targetUserId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{targetUserId}/follow")
+    public ResponseEntity<Void> unfollow(@PathVariable String targetUserId,
+                                         @AuthenticationPrincipal UserDetails user) {
+        followService.unfollow(user.getUsername(), targetUserId);
+        return ResponseEntity.ok().build();
     }
 }

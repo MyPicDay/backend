@@ -1,11 +1,16 @@
 package mypicday.store.follow.service;
 
 import lombok.RequiredArgsConstructor;
+import mypicday.store.follow.dto.UserProfileDTO;
 import mypicday.store.follow.entity.Follow;
 import mypicday.store.follow.repository.FollowRepository;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +46,47 @@ public class FollowService {
                 .orElseThrow(() -> new RuntimeException("대상 계정 없음"));
 
         followRepository.deleteByFollowerAndFollowing(me, target);
+    }
+
+    public List<UserProfileDTO> getFollowers(@PathVariable String userId) {
+        User me = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음")) ;
+
+        List<Follow> followers = followRepository.findByFollower_Id(userId);
+
+        return followers.stream()
+                .map(f -> {
+                    User followed = f.getFollower();
+                    return new UserProfileDTO(
+                            followed.getId(),
+                            followed.getNickname(),
+                            followed.getEmail(),
+                            followed.getAvatar(),
+                            true  // 내가 팔로우한 사람이므로 항상 true
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<UserProfileDTO> getFollowings(String userId, String loginUserId) {
+        User me = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음")) ;
+
+        // userId가 팔로우한 유저들의 ID 목록 조회
+        List<Follow> followingUserIds = followRepository.findByFollowing_Id(userId);
+
+        return followingUserIds.stream()
+                .map(f -> {
+                    User followed = f.getFollowing();
+                    return new UserProfileDTO(
+                            followed.getId(),
+                            followed.getNickname(),
+                            followed.getEmail(),
+                            followed.getAvatar(),
+                            true  // 내가 팔로우한 사람이므로 항상 true
+                    );
+                })
+                .collect(Collectors.toList());
     }
 }
 

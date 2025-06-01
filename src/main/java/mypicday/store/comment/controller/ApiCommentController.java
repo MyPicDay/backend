@@ -62,6 +62,4 @@ public class ApiCommentController {
 
         return new ResponseEntity<>(responseCommentUser, HttpStatus.OK);
     }
-
-
 }

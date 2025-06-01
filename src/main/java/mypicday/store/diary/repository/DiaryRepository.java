@@ -51,6 +51,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
                                                                     LocalDateTime startOfMonth,
                                                                     LocalDateTime endOfMonth);
 
+    long countByUserId(String userId);
+
     // @Query("select d from Diary d left join fetch d.imageList where d.user.id = :userId and d.createdAt between :startOfMonth and :endOfMonth order by d.createdAt desc")
     // List<Diary> findByUserIdAndCreatedAtBetweenWithImages(@Param("userId") String userId,
     //                                                      @Param("startOfMonth") LocalDateTime startOfMonth,
