@@ -1,23 +1,38 @@
 package mypicday.store.follow.controller;
 
+import lombok.RequiredArgsConstructor;
 import mypicday.store.follow.dto.UserProfileDTO;
 import mypicday.store.follow.service.FollowService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("api/followings")
+@RequiredArgsConstructor
 public class FollowingController {
-    private FollowService followService;
+    private final FollowService followService;
 
-    // 특정 사용자가 팔로우 중인 사용자 목록 조회
-    @GetMapping("/{userId}/followingusers")
-    public ResponseEntity<List<UserProfileDTO>> getFollowings(
-            @PathVariable String userId,
-            @RequestHeader("X-USER-ID") String loginUserId) {
-        List<UserProfileDTO> followings = followService.getFollowings(userId, loginUserId);
-        return ResponseEntity.ok(followings);
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<UserProfileDTO>> getFollowings(@PathVariable String userId) {
+        List<UserProfileDTO> result = followService.getFollowings(userId);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{targetUserId}/follow") //팔로우 요청 버튼
+    public ResponseEntity<Void> follow(@PathVariable String targetUserId,
+                                       @AuthenticationPrincipal UserDetails user) {
+        followService.follow(user.getUsername(), targetUserId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{targetUserId}/follow")//팔로우 취소 요청 버튼
+    public ResponseEntity<Void> unfollow(@PathVariable String targetUserId,
+                                         @AuthenticationPrincipal UserDetails user) {
+        followService.unfollow(user.getUsername(), targetUserId);
+        return ResponseEntity.ok().build();
     }
 }

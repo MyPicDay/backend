@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/users/following")
 @RequiredArgsConstructor
-public class FollowAPIController {
+public class ProfileController {
     private final FollowRepository followRepository;
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;

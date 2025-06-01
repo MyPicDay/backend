@@ -68,7 +68,7 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserProfileDTO> getFollowings(String userId, String loginUserId) {
+    public List<UserProfileDTO> getFollowings(String userId) {
         User me = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음")) ;
 
