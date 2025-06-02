@@ -13,6 +13,8 @@ import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -48,6 +50,10 @@ public class CommentService {
 
     public int commentCountByDiaryId(Long diaryId){
         return commentRepository.countByDiary_Id(diaryId);
+    }
+
+    public List<Comment> findAllByDiaryId(Long diaryId) {
+        return commentRepository.findAllByDiaryId(diaryId);
     }
 
 }

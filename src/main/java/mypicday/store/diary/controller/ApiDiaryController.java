@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import mypicday.store.comment.dto.reponse.ResponseCommentDto;
 import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
+import mypicday.store.comment.service.CommentService;
 import mypicday.store.diary.dto.DiaryDto;
+import mypicday.store.diary.dto.response.CommentDto;
 import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.dto.response.UserDiaryDto;
@@ -39,6 +41,7 @@ public class ApiDiaryController {
     private final DiaryService diaryService;
     private final FileUtil fileUtil;
     private final RequestMetaMapper requestMetaMapper;
+    private final CommentService commentService;
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
@@ -129,6 +132,24 @@ public class ApiDiaryController {
 
         RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
         DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(diaryId, requestMetaInfo);
+        List<Comment> comments = commentService.findAllByDiaryId(diaryId);
+        List<CommentDto> commentDtos = new ArrayList<>();
+        if (comments == null) {
+            return ResponseEntity.ok(detail) ;
+        }
+
+        comments.forEach(comment -> {
+                    if (comment.getParent() == null) {
+                        commentDtos.add(new CommentDto(comment.getId(), null,
+                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() , comment.getCreatedAt()));
+                    } else {
+                        commentDtos.add(new CommentDto(comment.getId(), comment.getParent().getId(),
+                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() ,comment.getCreatedAt()));
+
+                    }
+                });
+
+        detail.setComments(commentDtos);
         return ResponseEntity.ok(detail);
     }
 

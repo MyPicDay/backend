@@ -17,16 +17,15 @@ public class DiaryMapper {
 
     private final ImagePathToUrlConverter converter;
 
-    public DiaryDetailResponseDTO toDiaryDetailResponseDTO(Diary diary, User user, int commentCount, RequestMetaInfo requestMetaInfo) {
+    public DiaryDetailResponseDTO toDiaryDetailResponseDTO(Diary diary, User user, int commentCount, RequestMetaInfo requestMetaInfo , boolean like) {
         return DiaryDetailResponseDTO.builder()
-                .id(diary.getId())
-                .title(diary.getTitle())
-                .content(diary.getContent())
-                .visibility(diary.getStatus())
                 .imageUrls(diary.getImageList().stream()
                         .map(imageName -> converter.diaryImageUrl(imageName, requestMetaInfo))
                         .collect(Collectors.toList()))
                 .commentCount(commentCount)
+                .likeCount(diary.getLike().getCount())
+                .liked(like)
+                .content(diary.getContent())
                 .author(
                         new UserInfoDTO(
                                 user.getId(),
