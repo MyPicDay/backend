@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @RestController
@@ -36,7 +37,7 @@ public class ApiCommentController {
         User findUser = userService.getUserById(userId);
         Comment comment = commentService.saveComment(commentDto, userId);
         Long commentId = comment.getId();
-        LocalDate localDate = comment.getCreatedAt().toLocalDate();
+        LocalDateTime localDate = comment.getCreatedAt();
         String avator = "/images/logo.png" ; // 나중에 프로필 이미지 수정
 
         ResponseCommentUser responseCommentUser = new ResponseCommentUser(commentId, findUser.getNickname(), avator, localDate);
@@ -54,7 +55,7 @@ public class ApiCommentController {
         Comment reply = commentService.saveReply(userId, replyDto);
         User findUser = userService.getUserById(userId);
         Long replyId = reply.getId();
-        LocalDate localDate = reply.getCreatedAt().toLocalDate();
+        LocalDateTime localDate = reply.getCreatedAt();
         String avator = "/images/logo.png" ; // 나중에 프로필 이미지 수정
 
         ResponseCommentUser responseCommentUser = new ResponseCommentUser(replyId, findUser.getNickname(), avator, localDate);
