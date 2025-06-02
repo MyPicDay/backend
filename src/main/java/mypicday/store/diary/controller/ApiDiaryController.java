@@ -128,10 +128,10 @@ public class ApiDiaryController {
     }
 
     @GetMapping("/diaries/{diaryId}")
-    public ResponseEntity<DiaryDetailResponseDTO> getDiaryDetail(HttpServletRequest request, @PathVariable Long diaryId) {
-
+    public ResponseEntity<DiaryDetailResponseDTO> getDiaryDetail(@AuthenticationPrincipal CustomUserDetails customUserDetails ,HttpServletRequest request, @PathVariable Long diaryId) {
+        String userId  = customUserDetails.getId();
         RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
-        DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(diaryId, requestMetaInfo);
+        DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(userId ,diaryId, requestMetaInfo);
         List<Comment> comments = commentService.findAllByDiaryId(diaryId);
         List<CommentDto> commentDtos = new ArrayList<>();
         if (comments == null) {

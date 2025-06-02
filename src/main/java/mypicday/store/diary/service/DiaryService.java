@@ -123,12 +123,17 @@ public class DiaryService {
                 .collect(Collectors.toList());
     }
 
-    public DiaryDetailResponseDTO getDiaryDetail(Long diaryId, RequestMetaInfo metaInfo) {
+    public DiaryDetailResponseDTO getDiaryDetail(String userId ,Long diaryId, RequestMetaInfo metaInfo) {
         Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new IllegalArgumentException("Diary not found"));
         User user = diary.getUser();
-        boolean like = likedUserService.findLike(user.getId(), diaryId);
+        log.info("user.getName {}", user.getNickname());
+        LikeEntity like = diary.getLike();
+        Long likeId = like.getId();
+        log.info("likedId {}", likeId);
+        boolean liked = likedUserService.findLike(userId , likeId);
+        log.info("likedbool: {}", liked);
         int commentCount = commentService.commentCountByDiaryId(diaryId);
-        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , like);
+        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked);
         return diaryDetailResponseDTO;
     }
 
