@@ -3,6 +3,7 @@ package mypicday.store.diary.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mypicday.store.ai.service.DiaryImageGenerationService;
 import mypicday.store.comment.dto.reponse.ResponseCommentDto;
 import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
@@ -42,10 +43,12 @@ public class ApiDiaryController {
     private final FileUtil fileUtil;
     private final RequestMetaMapper requestMetaMapper;
     private final CommentService commentService;
+    private final DiaryImageGenerationService diaryImageGenerationService;
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
-                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
+                                        @AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                     HttpServletRequest request) throws IOException {
         String userId = customUserDetails.getId();
         Optional<Diary> diary = diaryService.updateDiary(userId, diaryDto);
         if (diary.isPresent()) {
@@ -54,10 +57,21 @@ public class ApiDiaryController {
 
         // 새로운 FileUtil을 사용하여 파일 저장 (userId 전달)
         List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
+
+        // diartyDto.getAiGeneratedImage 가 null이 아닐 경우, 이미지 저장 url 제거 후 저장
+        if (diaryDto.getAiGeneratedImage() != null) {
+            String aiImagePath = diaryImageGenerationService.getPathFromUrl(diaryDto.getAiGeneratedImage(), request);
+            if (!aiImagePath.isBlank()){
+                images.add(0, aiImagePath);
+            }
+        }
+
         diaryDto.setAllImages(images);
+        Diary diaryInfo = diaryService.save(userId, diaryDto);
+        if (diaryDto.getAiGeneratedImage() != null) {
+            diaryImageGenerationService.diaryUpdate(customUserDetails, diaryInfo.getId(), diaryDto.getAllImages().get(0));
+        }
 
-
-        diaryService.save(userId, diaryDto);
         return ResponseEntity.ok(Map.of("id", userId));
     }
 

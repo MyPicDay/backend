@@ -19,5 +19,5 @@ public class DiaryDto {
     private List<String> allImages;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
-
+    private String aiGeneratedImage;
 }
