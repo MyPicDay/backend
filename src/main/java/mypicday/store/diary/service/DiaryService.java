@@ -5,6 +5,7 @@ import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.mapper.DiaryMapper;
 import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.likedUser.service.LikedUserService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-
+    private final LikedUserService likedUserService;
     private final UserRepository userRepository;
     private final CommentService commentService;
     private final DiaryMapper diaryMapper;
@@ -92,6 +93,8 @@ public class DiaryService {
         return diaryRepository.findAllComments(diaryId);
     }
 
+
+
     @Transactional(readOnly = true)
     public List<Diary> findAllReplies(Long diaryId) {
         return diaryRepository.findAllReplies(diaryId);
@@ -123,8 +126,11 @@ public class DiaryService {
     public DiaryDetailResponseDTO getDiaryDetail(Long diaryId, RequestMetaInfo metaInfo) {
         Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new IllegalArgumentException("Diary not found"));
         User user = diary.getUser();
+        boolean like = likedUserService.findLike(user.getId(), diaryId);
         int commentCount = commentService.commentCountByDiaryId(diaryId);
-        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo);
+        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , like);
         return diaryDetailResponseDTO;
     }
+
+
 }

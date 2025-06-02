@@ -44,6 +44,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     @Query("select d from Diary d join fetch d.user left join fetch d.comments where d.id = :diaryId")
     List<Diary> findAllComments(@Param("diaryId") Long diaryId);
 
+
+
     @Query("select d from Diary d join fetch d.user left join fetch d.comments c where d.id = :diaryId and c.parent is not null")
     List<Diary> findAllReplies(Long diaryId);
 
