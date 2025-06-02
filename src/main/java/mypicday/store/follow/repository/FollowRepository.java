@@ -8,8 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface FollowRepository extends JpaRepository<Follow, FollowId> {
-    //
+
+    boolean existsById(FollowId userid);
+
     boolean existsByFollowerAndFollowing(User follower, User following);
+
+    boolean existsByFollower_IdAndFollowing_Id(String followerId, String followingId);
 
 
     void deleteByFollowerAndFollowing(User follower, User following);

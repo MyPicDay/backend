@@ -53,17 +53,20 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/diaries/images/{userId}/{fileName:.+}",
                                 "/api/characters/fixed/**",
-                                "/api/follow/{userId}",
                                 "/api/users/{userid}/followers",
+                                "/api/users/**",
                                 "/api/followings/{userId}",
                                 "/api/users/following/{userId}",
-                                "/api/profiles/**"
+                                "/api/profiles/**",
+                                "/follow/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
+
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
