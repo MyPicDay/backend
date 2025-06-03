@@ -1,12 +1,10 @@
 package mypicday.store.follow.dto;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import mypicday.store.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import mypicday.store.user.entity.User;
 
 @Data
 @Getter
@@ -23,18 +21,10 @@ public class UserResponseDTO {
     private long followerCount;
     private long followingCount;
     private boolean following;
-    private long followersCount;
-    private long followingsCount;
-
+    
     public UserResponseDTO(User user) {
-        private String email;
-        public UserResponseDTO(User user) {
         this.id = user.getId();
-        this.name = user.getNickname();
+        this.name = user.getNickname(); 
         this.avatar = user.getAvatar();
+        this.email = user.getEmail();
     }
-    private long diaryCount;
-    private long followerCount;
-    private long followingCount;
-    private boolean following;
-}
