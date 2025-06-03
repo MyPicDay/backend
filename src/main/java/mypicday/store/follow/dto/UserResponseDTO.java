@@ -22,13 +22,12 @@ public class UserResponseDTO {
     private boolean following;
 
     // 생성자 오버로딩: User 엔티티를 DTO로 변환
-    public UserResponseDTO(User user) {
-        this.id = user.getId();
-        this.userId = user.getUserId(); // 실제 필드명 확인 필요
-        this.name = user.getName();
-        this.nickname = user.getNickname();
-        this.avatar = user.getAvatar();
-        this.email = user.getEmail();
-        // diaryCount 등은 별도로 set 필요
-    }
+public UserResponseDTO(User user) {
+    this.id = user.getId();
+    this.userId = user.getId(); // 혹시 id와 userId를 다르게 쓸 게 아니라면 이대로 사용
+    this.name = user.getNickname(); // name 필드는 nickname에서 가져옴
+    this.nickname = user.getNickname();
+    this.avatar = user.getAvatar();
+    this.email = user.getEmail();
+}
 }
