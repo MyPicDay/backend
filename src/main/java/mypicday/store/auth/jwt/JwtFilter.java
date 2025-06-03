@@ -36,6 +36,11 @@ public class JwtFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         String authHeader = request.getHeader("Authorization");
         log.debug("[JWT 필터] 요청 URI : {}", requestURI);
+        String originHeader = request.getHeader("Origin");
+
+        log.debug("[JWT 필터] 요청 URI : {}", requestURI);
+        log.debug("[JWT 필터] Origin 헤더 : {}", originHeader);
+
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
