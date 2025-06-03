@@ -43,6 +43,7 @@ public class ApiDiaryController {
     private final RequestMetaMapper requestMetaMapper;
     private final CommentService commentService;
 
+
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
@@ -133,23 +134,10 @@ public class ApiDiaryController {
         RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
         DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(userId ,diaryId, requestMetaInfo);
         List<Comment> comments = commentService.findAllByDiaryId(diaryId);
-        List<CommentDto> commentDtos = new ArrayList<>();
         if (comments == null) {
             return ResponseEntity.ok(detail) ;
         }
 
-        comments.forEach(comment -> {
-                    if (comment.getParent() == null) {
-                        commentDtos.add(new CommentDto(comment.getId(), null,
-                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() , comment.getCreatedAt()));
-                    } else {
-                        commentDtos.add(new CommentDto(comment.getId(), comment.getParent().getId(),
-                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() ,comment.getCreatedAt()));
-
-                    }
-                });
-
-        detail.setComments(commentDtos);
         return ResponseEntity.ok(detail);
     }
 

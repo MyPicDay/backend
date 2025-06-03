@@ -1,11 +1,14 @@
 package mypicday.store.diary.service;
 
+import mypicday.store.comment.entity.Comment;
 import mypicday.store.comment.service.CommentService;
+import mypicday.store.diary.dto.response.CommentDto;
 import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.mapper.DiaryMapper;
 import mypicday.store.global.dto.RequestMetaInfo;
 import mypicday.store.likedUser.service.LikedUserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -129,11 +133,12 @@ public class DiaryService {
         log.info("user.getName {}", user.getNickname());
         LikeEntity like = diary.getLike();
         Long likeId = like.getId();
-        log.info("likedId {}", likeId);
+
         boolean liked = likedUserService.findLike(userId , likeId);
-        log.info("likedbool: {}", liked);
         int commentCount = commentService.commentCountByDiaryId(diaryId);
-        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked);
+        List<Comment> comments = commentService.findAllByDiaryId(diaryId);
+        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked ,comments);
+
         return diaryDetailResponseDTO;
     }
 
