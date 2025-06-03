@@ -13,6 +13,7 @@ import lombok.Getter;
 public class UserResponseDTO {
     private String id;
     private String userId;
+    private String name;
     private String nickname;
     private String avatar;
     private String email;
@@ -20,6 +21,10 @@ public class UserResponseDTO {
     private long followerCount;
     private long followingCount;
     private boolean following;
+        private long followersCount;
+    private long followingsCount;
+
+    public UserResponseDTO(User user) {
         private String email;
         public UserResponseDTO(User user) {
         this.id = user.getId();
