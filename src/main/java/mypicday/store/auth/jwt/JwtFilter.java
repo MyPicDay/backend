@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
 @Slf4j
@@ -36,6 +34,11 @@ public class JwtFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         String authHeader = request.getHeader("Authorization");
         log.debug("[JWT 필터] 요청 URI : {}", requestURI);
+        String originHeader = request.getHeader("Origin");
+
+        log.debug("[JWT 필터] 요청 URI : {}", requestURI);
+        log.debug("[JWT 필터] Origin 헤더 : {}", originHeader);
+
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
