@@ -79,12 +79,16 @@ public class DiaryService {
 
     }
 
-    public Optional<Diary> updateDiary(String userId , DiaryDto diaryDto) {
+    public boolean updateDiary(String userId , DiaryDto diaryDto) {
         LocalDateTime startOfDay = diaryDto.getDate().atStartOfDay();
+
         LocalDateTime endOfDay = diaryDto.getDate().atTime(23, 59, 59);
         Optional<Diary> diary = diaryRepository.findUserIdAndCreatedAt(userId, startOfDay, endOfDay);
         diary.ifPresent(value -> value.update(diaryDto.getTitle() , diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) , diaryDto.getAllImages()));
-        return diary ;
+        if (diary.isEmpty()) {
+            return true ;
+        }
+        return false;
     }
 
     @Transactional(readOnly = true)

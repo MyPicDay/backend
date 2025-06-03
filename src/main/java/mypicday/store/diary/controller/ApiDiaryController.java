@@ -48,14 +48,18 @@ public class ApiDiaryController {
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
         String userId = customUserDetails.getId();
-        Optional<Diary> diary = diaryService.updateDiary(userId, diaryDto);
-        if (diary.isPresent()) {
+
+        List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
+
+        diaryDto.setAllImages(images);
+        boolean bol = diaryService.updateDiary(userId, diaryDto);
+
+        if (!bol) {
             return ResponseEntity.ok(Map.of("id", userId));
         }
 
-        // 새로운 FileUtil을 사용하여 파일 저장 (userId 전달)
-        List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
-        diaryDto.setAllImages(images);
+
+
 
 
         diaryService.save(userId, diaryDto);
