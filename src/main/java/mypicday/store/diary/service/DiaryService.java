@@ -133,10 +133,12 @@ public class DiaryService {
         log.info("user.getName {}", user.getNickname());
         LikeEntity like = diary.getLike();
         Long likeId = like.getId();
+
         boolean liked = likedUserService.findLike(userId , likeId);
         int commentCount = commentService.commentCountByDiaryId(diaryId);
         List<Comment> comments = commentService.findAllByDiaryId(diaryId);
         DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked ,comments);
+
         return diaryDetailResponseDTO;
     }
 
