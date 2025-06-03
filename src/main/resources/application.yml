@@ -17,3 +17,9 @@ spring:
 
 jwt:
   secret: ${JWT_KEY:LhVYSkvR90p9A7jPFlWWZ0uB3RPiIGnN8s3aXk2lbE4=}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
