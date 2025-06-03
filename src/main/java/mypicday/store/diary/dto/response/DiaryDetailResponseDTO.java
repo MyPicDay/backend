@@ -26,5 +26,6 @@ public class DiaryDetailResponseDTO {
     private int commentCount;
     private LocalDate createdAt;
     private UserInfoDTO author;
+    
     private List<CommentDto> comments;
 }
