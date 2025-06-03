@@ -59,7 +59,7 @@ public class SecurityConfig {
                                 "/api/followings/{userId}",
                                 "/api/users/following/{userId}",
                                 "/api/profiles/**",
-                                "/follow/**"
+                                "/follow/**",
                                 "/actuator/health"
 
                         ).permitAll()
