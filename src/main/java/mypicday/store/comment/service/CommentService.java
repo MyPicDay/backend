@@ -13,6 +13,8 @@ import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -44,6 +46,14 @@ public class CommentService {
         //log.info("parentComment = {}", parentComment);
 
         return commentRepository.save(Comment.createReply(user , diary ,replyDto.getComment() , parentComment));
+    }
+
+    public int commentCountByDiaryId(Long diaryId){
+        return commentRepository.countByDiary_Id(diaryId);
+    }
+
+    public List<Comment> findAllByDiaryId(Long diaryId) {
+        return commentRepository.findAllByDiaryId(diaryId);
     }
 
 }

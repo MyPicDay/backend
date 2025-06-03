@@ -1,17 +1,23 @@
 package mypicday.store.diary.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.comment.dto.reponse.ResponseCommentDto;
 import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
+import mypicday.store.comment.service.CommentService;
 import mypicday.store.diary.dto.DiaryDto;
+import mypicday.store.diary.dto.response.CommentDto;
+import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.dto.response.UserDiaryDto;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.service.DiaryService;
 import mypicday.store.file.FileUtil;
 import mypicday.store.global.config.CustomUserDetails;
+import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.global.util.RequestMetaMapper;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +40,8 @@ public class ApiDiaryController {
 
     private final DiaryService diaryService;
     private final FileUtil fileUtil;
+    private final RequestMetaMapper requestMetaMapper;
+    private final CommentService commentService;
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
@@ -119,7 +127,31 @@ public class ApiDiaryController {
         return new ResponseEntity<>(userCommentsDto, HttpStatus.OK);
     }
 
+    @GetMapping("/diaries/{diaryId}")
+    public ResponseEntity<DiaryDetailResponseDTO> getDiaryDetail(@AuthenticationPrincipal CustomUserDetails customUserDetails ,HttpServletRequest request, @PathVariable Long diaryId) {
+        String userId  = customUserDetails.getId();
+        RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
+        DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(userId ,diaryId, requestMetaInfo);
+        List<Comment> comments = commentService.findAllByDiaryId(diaryId);
+        List<CommentDto> commentDtos = new ArrayList<>();
+        if (comments == null) {
+            return ResponseEntity.ok(detail) ;
+        }
 
+        comments.forEach(comment -> {
+                    if (comment.getParent() == null) {
+                        commentDtos.add(new CommentDto(comment.getId(), null,
+                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() , comment.getCreatedAt()));
+                    } else {
+                        commentDtos.add(new CommentDto(comment.getId(), comment.getParent().getId(),
+                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() ,comment.getCreatedAt()));
+
+                    }
+                });
+
+        detail.setComments(commentDtos);
+        return ResponseEntity.ok(detail);
+    }
 
 }
 
