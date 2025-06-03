@@ -7,7 +7,6 @@ import lombok.Getter;
 import mypicday.store.user.entity.User;
 
 @Data
-@Getter
 @AllArgsConstructor
 @Builder
 public class UserResponseDTO {
@@ -21,10 +20,15 @@ public class UserResponseDTO {
     private long followerCount;
     private long followingCount;
     private boolean following;
-    
+
+    // 생성자 오버로딩: User 엔티티를 DTO로 변환
     public UserResponseDTO(User user) {
         this.id = user.getId();
-        this.name = user.getNickname(); 
+        this.userId = user.getUserId(); // 실제 필드명 확인 필요
+        this.name = user.getName();
+        this.nickname = user.getNickname();
         this.avatar = user.getAvatar();
         this.email = user.getEmail();
+        // diaryCount 등은 별도로 set 필요
     }
+}
