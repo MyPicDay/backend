@@ -52,7 +52,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/diaries/images/{userId}/{fileName:.+}",
-                                "/api/characters/fixed/**"
+                                "/api/characters/fixed/**",
+                                "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
