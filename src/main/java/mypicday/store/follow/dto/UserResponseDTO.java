@@ -1,5 +1,7 @@
 package mypicday.store.follow.dto;
 
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import mypicday.store.user.entity.User;
 import lombok.AllArgsConstructor;
@@ -21,7 +23,7 @@ public class UserResponseDTO {
     private long followerCount;
     private long followingCount;
     private boolean following;
-        private long followersCount;
+    private long followersCount;
     private long followingsCount;
 
     public UserResponseDTO(User user) {
