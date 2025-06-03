@@ -22,17 +22,17 @@ public class FollowingController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/{targetUserId}/follow") //팔로우 요청 버튼
-    public ResponseEntity<Void> follow(@PathVariable String targetUserId,
+    @PostMapping("/{userId}") //팔로우 요청 버튼
+    public ResponseEntity<Void> follow(@PathVariable String userId,
                                        @AuthenticationPrincipal UserDetails user) {
-        followService.follow(user.getUsername(), targetUserId);
+        followService.follow(user.getUsername(), userId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{targetUserId}/follow")//팔로우 취소 요청 버튼
-    public ResponseEntity<Void> unfollow(@PathVariable String targetUserId,
+    @DeleteMapping("/{userId}")//팔로우 취소
+    public ResponseEntity<Void> unfollow(@PathVariable String userId,
                                          @AuthenticationPrincipal UserDetails user) {
-        followService.unfollow(user.getUsername(), targetUserId);
+        followService.unfollow(user.getUsername(), userId);
         return ResponseEntity.ok().build();
     }
 }
