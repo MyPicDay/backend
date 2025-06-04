@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "tokens")
+@Table(name = "refresh_tokens")
 @Getter
 @NoArgsConstructor
 public class RefreshToken {
