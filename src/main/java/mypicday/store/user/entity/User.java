@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mypicday.store.diary.entity.Diary;
 import mypicday.store.follow.entity.Follow;
 import mypicday.store.global.entity.BaseEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,10 +32,8 @@ public class User extends BaseEntity {
 
     private String avatar;
 
-    public void changeAvatar(String avatar) {
-        this.avatar = avatar;
-
-    }
+    @OneToMany(mappedBy = "user")
+    private List<Diary> diaries = new ArrayList<>();
 
     //내가 팔로잉 하는 유저
     @OneToMany(mappedBy = "follower")
@@ -60,5 +60,10 @@ public class User extends BaseEntity {
     public User(List<Follow> following, List<Follow> followers) {
         this.following = following;
         this.followers = followers;
+    }
+
+    public void changeAvatar(String avatar) {
+        this.avatar = avatar;
+
     }
 }

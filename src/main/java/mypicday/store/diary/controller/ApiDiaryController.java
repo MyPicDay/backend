@@ -18,6 +18,7 @@ import mypicday.store.diary.service.DiaryService;
 import mypicday.store.file.FileUtil;
 import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.global.util.ImagePathToUrlConverter;
 import mypicday.store.global.util.RequestMetaMapper;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -44,18 +45,14 @@ public class ApiDiaryController {
     private final RequestMetaMapper requestMetaMapper;
     private final CommentService commentService;
     private final DiaryImageGenerationService diaryImageGenerationService;
+    private final ImagePathToUrlConverter converter;
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                      HttpServletRequest request) throws IOException {
         String userId = customUserDetails.getId();
-        Optional<Diary> diary = diaryService.updateDiary(userId, diaryDto);
-        if (diary.isPresent()) {
-            return ResponseEntity.ok(Map.of("id", userId));
-        }
 
-        // 새로운 FileUtil을 사용하여 파일 저장 (userId 전달)
         List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
 
         // diartyDto.getAiGeneratedImage 가 null이 아닐 경우, 이미지 저장 url 제거 후 저장
@@ -70,6 +67,11 @@ public class ApiDiaryController {
         Diary diaryInfo = diaryService.save(userId, diaryDto);
         if (diaryDto.getAiGeneratedImage() != null) {
             diaryImageGenerationService.diaryUpdate(customUserDetails, diaryInfo.getId(), diaryDto.getAllImages().get(0));
+        diaryDto.setAllImages(images);
+        boolean bol = diaryService.updateDiary(userId, diaryDto);
+
+        if (!bol) {
+            return ResponseEntity.ok(Map.of("id", userId));
         }
 
         return ResponseEntity.ok(Map.of("id", userId));
@@ -89,13 +91,16 @@ public class ApiDiaryController {
 
 
     @GetMapping("/diaries")
-    public ResponseEntity<List<DiaryResponse>> findAllDiaries() {
+    public ResponseEntity<List<DiaryResponse>> findAllDiaries(HttpServletRequest request) {
+
         List<Diary> allDiaries = diaryService.findAllDiaries();
 
         log.info("findAllDiaries: allDiaries = {}", allDiaries.size());
+        RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
+
         List<DiaryResponse> diaries = allDiaries.stream().map(diary ->
                 new DiaryResponse(diary.getTitle(), diary.getId(), diary.getStatus(), diary.getContent(), diary.getUser().getNickname(), diary.getImageList(),
-                        diary.getComments().size() , diary.getCreatedAt().toLocalDate())
+                        diary.getComments().size() , diary.getCreatedAt().toLocalDate() , converter.userAvatarImageUrl(diary.getUser().getAvatar() , requestMetaInfo))
         ).collect(toList());
         return diaries.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(diaries);
     }
@@ -147,23 +152,10 @@ public class ApiDiaryController {
         RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
         DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(userId ,diaryId, requestMetaInfo);
         List<Comment> comments = commentService.findAllByDiaryId(diaryId);
-        List<CommentDto> commentDtos = new ArrayList<>();
         if (comments == null) {
             return ResponseEntity.ok(detail) ;
         }
 
-        comments.forEach(comment -> {
-                    if (comment.getParent() == null) {
-                        commentDtos.add(new CommentDto(comment.getId(), null,
-                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() , comment.getCreatedAt()));
-                    } else {
-                        commentDtos.add(new CommentDto(comment.getId(), comment.getParent().getId(),
-                                comment.getUser().getNickname(), comment.getUser().getAvatar(), comment.getContext() ,comment.getCreatedAt()));
-
-                    }
-                });
-
-        detail.setComments(commentDtos);
         return ResponseEntity.ok(detail);
     }
 

@@ -1,11 +1,14 @@
 package mypicday.store.diary.service;
 
+import mypicday.store.comment.entity.Comment;
 import mypicday.store.comment.service.CommentService;
+import mypicday.store.diary.dto.response.CommentDto;
 import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.mapper.DiaryMapper;
 import mypicday.store.global.dto.RequestMetaInfo;
 import mypicday.store.likedUser.service.LikedUserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -75,12 +79,16 @@ public class DiaryService {
 
     }
 
-    public Optional<Diary> updateDiary(String userId , DiaryDto diaryDto) {
+    public boolean updateDiary(String userId , DiaryDto diaryDto) {
         LocalDateTime startOfDay = diaryDto.getDate().atStartOfDay();
+
         LocalDateTime endOfDay = diaryDto.getDate().atTime(23, 59, 59);
         Optional<Diary> diary = diaryRepository.findUserIdAndCreatedAt(userId, startOfDay, endOfDay);
         diary.ifPresent(value -> value.update(diaryDto.getTitle() , diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) , diaryDto.getAllImages()));
-        return diary ;
+        if (diary.isEmpty()) {
+            return true ;
+        }
+        return false;
     }
 
     @Transactional(readOnly = true)
@@ -101,11 +109,12 @@ public class DiaryService {
     }
 
 
-    public List<DiaryResponse> findMonthlyDiaries(String userId, int year, int month) {
+    public List<DiaryResponse> findMonthlyDiaries(String userId, int year, int month ) {
         // 해당 연월의 시작과 끝 날짜 계산
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+
 
         // 해당 월의 다이어리들을 조회하고 DiaryResponse로 변환하여 반환
             List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfMonth, endOfMonth);
@@ -129,11 +138,12 @@ public class DiaryService {
         log.info("user.getName {}", user.getNickname());
         LikeEntity like = diary.getLike();
         Long likeId = like.getId();
-        log.info("likedId {}", likeId);
+
         boolean liked = likedUserService.findLike(userId , likeId);
-        log.info("likedbool: {}", liked);
         int commentCount = commentService.commentCountByDiaryId(diaryId);
-        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked);
+        List<Comment> comments = commentService.findAllByDiaryId(diaryId);
+        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked ,comments);
+
         return diaryDetailResponseDTO;
     }
 

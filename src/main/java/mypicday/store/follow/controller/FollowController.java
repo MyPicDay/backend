@@ -1,6 +1,8 @@
 package mypicday.store.follow.controller;
 
 import lombok.RequiredArgsConstructor;
+import mypicday.store.diary.repository.DiaryRepository;
+import mypicday.store.follow.dto.UserResponseDTO;
 import mypicday.store.follow.entity.FollowId;
 import mypicday.store.follow.repository.FollowRepository;
 import mypicday.store.follow.service.FollowService;
@@ -19,6 +21,30 @@ public class FollowController {
     private final FollowService followService;
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final DiaryRepository diaryRepository;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponseDTO> getProfile(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable String userId) {
+        User target = userRepository.findById(userId).orElseThrow();
+
+        boolean isFollowing = followRepository.existsById(new FollowId(target.getId(), currentUser.getId()));
+
+        long diaryCount = diaryRepository.countByUser_Id(target.getId());
+        long followerCount = followRepository.countByFollower_Id(target.getId());
+        long followingCount = followRepository.countByFollowing_Id(target.getId());
+
+        UserResponseDTO userResponseDTO = UserResponseDTO.builder()
+                .userId(target.getId())
+                .nickname(target.getNickname())
+                .email(target.getEmail())
+                .avatar(target.getAvatar())
+                .diaryCount(diaryCount)
+                .followerCount(followerCount)
+                .followingCount(followingCount)
+                .following(isFollowing) // 핵심: 로그인한 유저 기준으로 팔로우 여부 반환
+                .build();
+        return ResponseEntity.ok(userResponseDTO);
+    }
 
 
     //팔로우

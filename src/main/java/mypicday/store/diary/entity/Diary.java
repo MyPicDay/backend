@@ -64,6 +64,8 @@ public class Diary extends BaseEntity {
         this.content = content;
         this.status = status;
         this.imageList = imageList;
+       // System.out.println("imageList.size() = " + imageList.size());
+
         return this;
     }
 }
