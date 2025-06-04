@@ -52,17 +52,17 @@ public class FollowService {
         User me = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음")) ;
 
-        List<Follow> followers = followRepository.findByFollower_Id(userId);
+        List<Follow> followers = followRepository.findByFollowing_Id(userId);
 
         return followers.stream()
                 .map(f -> {
-                    User followed = f.getFollower();
+                    User follower = f.getFollower();
                     return new UserProfileDTO(
-                            followed.getId(),
-                            followed.getNickname(),
-                            followed.getAvatar(),
-                            followed.getEmail(),
-                            true  // 내가 팔로우한 사람이므로 항상 true
+                            follower.getId(),
+                            follower.getNickname(),
+                            follower.getAvatar(),
+                            follower.getEmail(),
+                            false //이 사람이 날 팔로우 하고 있는지 별도로 판단
                     );
                 })
                 .collect(Collectors.toList());
@@ -73,17 +73,17 @@ public class FollowService {
                 .orElseThrow(() -> new RuntimeException("사용자 없음")) ;
 
         // userId가 팔로우한 유저들의 ID 목록 조회
-        List<Follow> followingUserIds = followRepository.findByFollowing_Id(userId);
+        List<Follow> followings = followRepository.findByFollower_Id(userId);
 
-        return followingUserIds.stream()
+        return followings.stream()
                 .map(f -> {
-                    User followed = f.getFollowing();
+                    User following = f.getFollowing();
                     return new UserProfileDTO(
-                            followed.getId(),
-                            followed.getNickname(),
-                            followed.getAvatar(),
-                            followed.getEmail(),
-                            true  // 내가 팔로우한 사람이므로 항상 true
+                            following.getId(),
+                            following.getNickname(),
+                            following.getAvatar(),
+                            following.getEmail(),
+                            true  // 내가 팔로잉 하고 있는 사람
                     );
                 })
                 .collect(Collectors.toList());
