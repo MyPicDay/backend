@@ -109,11 +109,12 @@ public class DiaryService {
     }
 
 
-    public List<DiaryResponse> findMonthlyDiaries(String userId, int year, int month) {
+    public List<DiaryResponse> findMonthlyDiaries(String userId, int year, int month ) {
         // 해당 연월의 시작과 끝 날짜 계산
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+
 
         // 해당 월의 다이어리들을 조회하고 DiaryResponse로 변환하여 반환
             List<Diary> diaries = diaryRepository.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfMonth, endOfMonth);
