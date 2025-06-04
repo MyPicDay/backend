@@ -9,7 +9,6 @@ import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
 import mypicday.store.comment.service.CommentService;
 import mypicday.store.diary.dto.DiaryDto;
-import mypicday.store.diary.dto.response.CommentDto;
 import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.dto.response.UserDiaryDto;
@@ -64,18 +63,24 @@ public class ApiDiaryController {
         }
 
         diaryDto.setAllImages(images);
-        Diary diaryInfo = diaryService.save(userId, diaryDto);
-        if (diaryDto.getAiGeneratedImage() != null) {
-            diaryImageGenerationService.diaryUpdate(customUserDetails, diaryInfo.getId(), diaryDto.getAllImages().get(0));
-        diaryDto.setAllImages(images);
         boolean bol = diaryService.updateDiary(userId, diaryDto);
 
         if (!bol) {
+            Optional<Diary> diary = diaryService.getDiaryByUserIdAndDiaryDTO(userId, diaryDto);
+            diaryImageGenerationService.diaryUpdate(customUserDetails, diary.get().getId(), diaryDto.getAllImages().get(0));
             return ResponseEntity.ok(Map.of("id", userId));
         }
 
+        Diary diaryInfo = diaryService.save(userId, diaryDto);
+        if (diaryDto.getAiGeneratedImage() != null) {
+            diaryImageGenerationService.diaryUpdate(customUserDetails, diaryInfo.getId(), diaryDto.getAllImages().get(0));
+            diaryDto.setAllImages(images);
+        }
+
+
         return ResponseEntity.ok(Map.of("id", userId));
     }
+
 
 
     @GetMapping("/diary")
