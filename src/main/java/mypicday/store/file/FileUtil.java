@@ -177,7 +177,7 @@ public class FileUtil {
      */
     public String getImageAsBase64(String filePathWithUser) {
         try {
-            Path path = Paths.get(FileConstants.UPLOADS_BASE_DIR_NAME).resolve(filePathWithUser);
+            Path path = Paths.get(filePathWithUser);
             if (!Files.exists(path)) {
                 log.warn("파일이 존재하지 않습니다 - 경로: {}", filePathWithUser);
                 return null;
@@ -191,7 +191,7 @@ public class FileUtil {
             return null;
         }
     }
-    
+
     /**
      * 파일 크기 반환
      * @param filePathWithUser "userId/실제파일명" 형태의 파일 경로
@@ -324,5 +324,110 @@ public class FileUtil {
             log.error("캐릭터 이미지 로드 실패 - 경로 조합 중 오류: type={}, userId={}, fileName={}, 오류: {}", type, userId, fileName, e.getMessage());
             throw new RuntimeException("캐릭터 이미지 로드에 실패했습니다: " + fileName, e);
         }
+    }
+
+    /**
+     * Base64 인코딩된 이미지 데이터를 사용자별 폴더에 파일로 저장합니다.
+     * @param base64Data Base64 인코딩된 이미지 데이터
+     * @param userId 사용자 ID
+     * @param fileExtension 파일 확장자 (예: "png", "jpg")
+     * @return "userId/실제파일명" 형태의 저장된 파일 경로
+     */
+    public String saveBase64AsFile(String base64Data, String userId, String fileExtension) {
+        try {
+            log.info("Base64 이미지 저장 시작 - 사용자: {}, 확장자: {}", userId, fileExtension);
+            Path userUploadDir = getUserUploadDir(userId);
+            if (Files.notExists(userUploadDir)) {
+                Files.createDirectories(userUploadDir);
+            }
+            
+            if (base64Data == null || base64Data.trim().isEmpty()) {
+                throw new IllegalArgumentException("Base64 데이터가 비어있습니다.");
+            }
+            
+            // 확장자 정리 (점이 있으면 제거)
+            String cleanExtension = fileExtension.startsWith(".") ? fileExtension.substring(1) : fileExtension;
+            
+            // 유니크한 파일명 생성
+            String fileName = generateUniqueFileNameWithExtension(cleanExtension);
+            Path filePath = userUploadDir.resolve(fileName);
+            
+            // Base64 디코딩 후 파일 저장
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Data);
+            Files.write(filePath, imageBytes);
+            
+            log.info("Base64 이미지 저장 완료 - 사용자: {}, 파일: {}, 크기: {} bytes", userId, fileName, imageBytes.length);
+            return userId + "/" + fileName;
+            
+        } catch (IOException e) {
+            log.error("Base64 이미지 저장 실패 - 사용자: {}, 오류: {}", userId, e.getMessage());
+            throw new RuntimeException("Base64 이미지 저장에 실패했습니다.", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Base64 디코딩 실패 - 사용자: {}, 오류: {}", userId, e.getMessage());
+            throw new RuntimeException("Base64 데이터가 올바르지 않습니다.", e);
+        }
+    }
+
+    /**
+     * Base64 인코딩된 이미지 데이터를 캐릭터 이미지로 저장합니다.
+     * @param base64Data Base64 인코딩된 이미지 데이터
+     * @param type 캐릭터 생성 타입
+     * @param userId 사용자 ID (AI_GENERATED 타입에 필요)
+     * @param fileExtension 파일 확장자 (예: "png", "jpg")
+     * @param desiredName 저장 시 사용할 파일명 (확장자 제외). null일 경우 자동 생성.
+     * @return 실제 저장된 파일명 (순수 파일명, 예: "character_20241224_123456.png")
+     */
+    public String saveBase64AsCharacterImage(String base64Data, CharacterCreationType type, String userId, 
+                                           String fileExtension, String desiredName) {
+        try {
+            Path characterStorageDir = getCharacterUploadDir(type, userId);
+            if (Files.notExists(characterStorageDir)) {
+                Files.createDirectories(characterStorageDir);
+            }
+            
+            if (base64Data == null || base64Data.trim().isEmpty()) {
+                throw new IllegalArgumentException("Base64 데이터가 비어있습니다.");
+            }
+            
+            // 확장자 정리
+            String cleanExtension = fileExtension.startsWith(".") ? fileExtension.substring(1) : fileExtension;
+            
+            // 파일명 생성
+            String fileName;
+            if (desiredName != null && !desiredName.trim().isEmpty()) {
+                fileName = StringUtils.cleanPath(desiredName) + "." + cleanExtension;
+            } else {
+                fileName = generateUniqueFileNameWithExtension(cleanExtension);
+            }
+            
+            Path filePath = characterStorageDir.resolve(fileName);
+            
+            // Base64 디코딩 후 파일 저장
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Data);
+            Files.write(filePath, imageBytes);
+            
+            log.info("Base64 캐릭터 이미지 저장 완료 - 타입: {}, 사용자ID: {}, 파일: {}, 크기: {} bytes", 
+                    type, userId, fileName, imageBytes.length);
+            return fileName;
+            
+        } catch (IOException e) {
+            log.error("Base64 캐릭터 이미지 저장 실패 - 타입: {}, 사용자ID: {}, 오류: {}", type, userId, e.getMessage());
+            throw new RuntimeException("Base64 캐릭터 이미지 저장에 실패했습니다.", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Base64 디코딩 실패 - 타입: {}, 사용자ID: {}, 오류: {}", type, userId, e.getMessage());
+            throw new RuntimeException("Base64 데이터가 올바르지 않습니다.", e);
+        }
+    }
+
+    /**
+     * 확장자를 가진 유니크한 파일명을 생성합니다.
+     * 형식: yyyyMMdd_HHmmss_UUID8자리.확장자
+     * @param extension 파일 확장자 (점 없이, 예: "png")
+     * @return 생성된 유니크한 파일명
+     */
+    private String generateUniqueFileNameWithExtension(String extension) {
+        String timeStamp = LocalDateTime.now().format(TIME_FORMATTER);
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        return timeStamp + "_" + uuid + "." + extension;
     }
 }

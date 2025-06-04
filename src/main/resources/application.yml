@@ -15,6 +15,15 @@ spring:
         default-page-size: 10
         max-page-size: 100
 
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:api-key-placeholder}
+    base-url: https://generativelanguage.googleapis.com/v1beta
+    models:
+      image-generation: gemini-2.0-flash-preview-image-generation
+      chat: gemini-2.0-flash
+    timeout: 30s
+
 jwt:
   secret: ${JWT_KEY:LhVYSkvR90p9A7jPFlWWZ0uB3RPiIGnN8s3aXk2lbE4=}
 

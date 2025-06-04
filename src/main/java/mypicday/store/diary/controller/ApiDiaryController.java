@@ -3,12 +3,12 @@ package mypicday.store.diary.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mypicday.store.ai.service.DiaryImageGenerationService;
 import mypicday.store.comment.dto.reponse.ResponseCommentDto;
 import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
 import mypicday.store.comment.service.CommentService;
 import mypicday.store.diary.dto.DiaryDto;
-import mypicday.store.diary.dto.response.CommentDto;
 import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.dto.response.UserDiaryDto;
@@ -43,26 +43,44 @@ public class ApiDiaryController {
     private final FileUtil fileUtil;
     private final RequestMetaMapper requestMetaMapper;
     private final CommentService commentService;
+    private final DiaryImageGenerationService diaryImageGenerationService;
     private final ImagePathToUrlConverter converter;
-
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
-                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
+                                        @AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                     HttpServletRequest request) throws IOException {
         String userId = customUserDetails.getId();
 
         List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
+
+        // diartyDto.getAiGeneratedImage 가 null이 아닐 경우, 이미지 저장 url 제거 후 저장
+        if (diaryDto.getAiGeneratedImage() != null) {
+            String aiImagePath = diaryImageGenerationService.getPathFromUrl(diaryDto.getAiGeneratedImage(), request);
+            if (!aiImagePath.isBlank()){
+                images.add(0, aiImagePath);
+            }
+        }
 
         diaryDto.setAllImages(images);
         boolean bol = diaryService.updateDiary(userId, diaryDto);
 
         if (!bol) {
+            Optional<Diary> diary = diaryService.getDiaryByUserIdAndDiaryDTO(userId, diaryDto);
+            diaryImageGenerationService.diaryUpdate(customUserDetails, diary.get().getId(), diaryDto.getAllImages().get(0));
             return ResponseEntity.ok(Map.of("id", userId));
         }
 
-        diaryService.save(userId, diaryDto);
+        Diary diaryInfo = diaryService.save(userId, diaryDto);
+        if (diaryDto.getAiGeneratedImage() != null) {
+            diaryImageGenerationService.diaryUpdate(customUserDetails, diaryInfo.getId(), diaryDto.getAllImages().get(0));
+            diaryDto.setAllImages(images);
+        }
+
+
         return ResponseEntity.ok(Map.of("id", userId));
     }
+
 
 
     @GetMapping("/diary")

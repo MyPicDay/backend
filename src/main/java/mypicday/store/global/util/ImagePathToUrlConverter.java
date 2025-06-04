@@ -25,6 +25,26 @@ public class ImagePathToUrlConverter {
                 imagePath);
     }
 
+    public String extractImagePathFromUrl(String fullUrl, RequestMetaInfo requestMetaInfo) {
+        if (fullUrl == null || fullUrl.isEmpty() || requestMetaInfo == null) {
+            return "";
+        }
+
+        // 앞부분: "http://localhost:8080/api/diaries/images/"
+        String baseUrlPrefix = String.format("%s://%s:%d/api/diaries/images/",
+                requestMetaInfo.scheme(),
+                requestMetaInfo.domain(),
+                requestMetaInfo.port());
+
+        if (fullUrl.startsWith(baseUrlPrefix)) {
+            return fullUrl.substring(baseUrlPrefix.length());
+        }
+
+        // 매칭되지 않으면 빈 문자열 반환
+        return "";
+    }
+
+
     /**
      * Character 이미지 경로를 전체 URL로 변환합니다. (CharacterController 참고)
      *
