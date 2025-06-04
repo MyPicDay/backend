@@ -39,8 +39,8 @@ public class ProfileController {
                 user.getAvatar(),
                 user.getEmail(),
                 diaryCount,
-                followers,
                 followings,
+                followers,
                 isFollowing
         );
     }

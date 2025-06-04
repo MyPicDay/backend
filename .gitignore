@@ -44,3 +44,5 @@ uploads/
 characters/
 
 !characters/fixed/
+
+**/firebase-adminsdk.json
