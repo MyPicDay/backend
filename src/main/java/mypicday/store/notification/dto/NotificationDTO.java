@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import mypicday.store.notification.entity.Notification;
-import mypicday.store.user.entity.User;
 
 import java.time.LocalDateTime;
 

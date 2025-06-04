@@ -12,8 +12,10 @@ import mypicday.store.like.entity.LikeEntity;
 import mypicday.store.likedUser.Dto.LikedDto;
 import mypicday.store.likedUser.entity.LikedUser;
 import mypicday.store.likedUser.repository.LikedUserRepository;
+import mypicday.store.notification.dto.NotificationDTO;
 import mypicday.store.notification.entity.Notification;
 import mypicday.store.notification.repository.NotificationRepository;
+import mypicday.store.notification.service.NotificationService;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class LikedUserService {
     private final UserRepository userRepository;
     private final LikedUserRepository likedUserRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     public void LikedUser(String userId, LikedDto likedDto) {
 
@@ -61,6 +64,8 @@ public class LikedUserService {
 
         // 알림 로직
         if (isLiking && !findUser.getId().equals(diary.getUser().getId())) {
+            log.info("[알림 생성] 사용자 '{}'가 일기 ID={}에 좋아요를 눌렀습니다.", findUser.getId(), diary.getId());
+
             Notification notification = new Notification();
             notification.setReceiver(diary.getUser()); // 알림 받을 사람
             notification.setType("LIKE");
@@ -71,6 +76,17 @@ public class LikedUserService {
             notification.setCreatedAt(LocalDateTime.now());
 
             notificationRepository.save(notification);
+            log.info("[알림 저장 완료] 알림이 DB에 저장되었습니다. 수신자={}, 알림ID={}", diary.getUser().getId(), notification.getId());
+
+            String profileImage = findUser.getAvatar();
+            String diaryThumbnail = diary.getImageList().isEmpty() ? null : diary.getImageList().get(0);
+            String moveToWhere = "/diary/" + diary.getId();
+
+            NotificationDTO dto = NotificationDTO.from(notification, profileImage, diaryThumbnail, moveToWhere);
+            log.debug("[알림 DTO 생성] 알림 DTO 생성 완료: moveToWhere={}", moveToWhere);
+
+            notificationService.sendNotification(diary.getUser().getId(), dto);
+            log.info("[알림 전송] 사용자 '{}'에게 SSE 알림을 전송했습니다.", diary.getUser().getId());
         }
     }
     public boolean findLike(String userId , long likedId) {

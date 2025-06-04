@@ -3,8 +3,6 @@ package mypicday.store.notification.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import mypicday.store.user.entity.User;
-import mypicday.store.diary.entity.Diary;
-import mypicday.store.comment.entity.Comment;
 
 import java.time.LocalDateTime;
 
