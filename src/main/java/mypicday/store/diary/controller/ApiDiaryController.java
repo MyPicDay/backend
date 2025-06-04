@@ -17,6 +17,7 @@ import mypicday.store.diary.service.DiaryService;
 import mypicday.store.file.FileUtil;
 import mypicday.store.global.config.CustomUserDetails;
 import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.global.util.ImagePathToUrlConverter;
 import mypicday.store.global.util.RequestMetaMapper;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,7 @@ public class ApiDiaryController {
     private final FileUtil fileUtil;
     private final RequestMetaMapper requestMetaMapper;
     private final CommentService commentService;
+    private final ImagePathToUrlConverter converter;
 
 
     @PostMapping("/diary")
@@ -57,10 +59,6 @@ public class ApiDiaryController {
         if (!bol) {
             return ResponseEntity.ok(Map.of("id", userId));
         }
-
-
-
-
 
         diaryService.save(userId, diaryDto);
         return ResponseEntity.ok(Map.of("id", userId));
@@ -80,13 +78,16 @@ public class ApiDiaryController {
 
 
     @GetMapping("/diaries")
-    public ResponseEntity<List<DiaryResponse>> findAllDiaries() {
+    public ResponseEntity<List<DiaryResponse>> findAllDiaries(HttpServletRequest request) {
+
         List<Diary> allDiaries = diaryService.findAllDiaries();
 
         log.info("findAllDiaries: allDiaries = {}", allDiaries.size());
+        RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
+
         List<DiaryResponse> diaries = allDiaries.stream().map(diary ->
                 new DiaryResponse(diary.getTitle(), diary.getId(), diary.getStatus(), diary.getContent(), diary.getUser().getNickname(), diary.getImageList(),
-                        diary.getComments().size() , diary.getCreatedAt().toLocalDate())
+                        diary.getComments().size() , diary.getCreatedAt().toLocalDate() , converter.userAvatarImageUrl(diary.getUser().getAvatar() , requestMetaInfo))
         ).collect(toList());
         return diaries.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(diaries);
     }
