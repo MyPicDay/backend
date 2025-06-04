@@ -85,7 +85,7 @@ public class LikedUserService {
             NotificationDTO dto = NotificationDTO.from(notification, profileImage, diaryThumbnail, moveToWhere);
             log.debug("[알림 DTO 생성] 알림 DTO 생성 완료: moveToWhere={}", moveToWhere);
 
-            notificationService.sendNotification(diary.getUser().getId(), dto);
+            notificationService.sendNotificationSSEWithFcm(diary.getUser().getId(), dto);
             log.info("[알림 전송] 사용자 '{}'에게 SSE 알림을 전송했습니다.", diary.getUser().getId());
         }
     }

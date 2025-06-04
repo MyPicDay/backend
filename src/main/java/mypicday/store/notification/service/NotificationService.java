@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationService {
@@ -34,6 +33,7 @@ public class NotificationService {
     private final FcmTokenRepository fcmTokenRepository;
     private final FirebaseMessaging firebaseMessaging;
 
+    // 공유 자원이므로 ConcurrentHashMap 사용은 올바른 선택입니다.
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final Map<String, ScheduledExecutorService> pingExecutors = new ConcurrentHashMap<>();
 
@@ -113,46 +113,54 @@ public class NotificationService {
         log.info("[SSE 연결] 사용자 ID={}의 SSE 구독 요청", userId);
 
         SseEmitter emitter = new SseEmitter(60 * 1000L * 60); // 60분 유지
-        SseEmitter oldEmitter = emitters.put(userId, emitter);
-        if (oldEmitter != null) {
-            oldEmitter.complete();
-            shutdownPingExecutor(userId);
-            log.info("[SSE 중복 연결] 사용자 ID={}의 기존 SSE 연결 종료", userId);
-        }
 
-        Runnable cleanup = () -> {
-            emitters.remove(userId);
-            shutdownPingExecutor(userId);
-        };
-
-        emitter.onCompletion(cleanup);
-        emitter.onTimeout(cleanup);
-        emitter.onError(e -> {
-            log.error("[SSE 오류] 사용자 ID={} SSE 오류 발생", userId, e);
-            cleanup.run();
-        });
-
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        pingExecutors.put(userId, executor);
-        executor.scheduleAtFixedRate(() -> {
-            try {
-                emitter.send(SseEmitter.event().name("ping").data("keep-alive"));
-                log.debug("[SSE 핑] 사용자 ID={}에게 ping 전송", userId);
-            } catch (IOException e) {
-                emitter.completeWithError(e);
-                log.warn("[SSE 핑 실패] 사용자 ID={} ping 전송 실패", userId);
+        // ======================== [핵심 수정 사항] ========================
+        // synchronized 블록을 사용하여 특정 userId에 대한 접근을 동기화합니다.
+        // 이를 통해 check-then-act 로직의 원자성을 보장하여 경쟁 조건을 해결합니다.
+        synchronized (userId.intern()) {
+            // put() 메소드는 기존 값을 반환하므로, 이를 사용하여 이전 emitter를 가져옵니다.
+            SseEmitter oldEmitter = emitters.put(userId, emitter);
+            if (oldEmitter != null) {
+                oldEmitter.complete();
+                shutdownPingExecutor(userId); // 기존 연결의 ping 스케줄러도 함께 종료
+                log.info("[SSE 중복 연결] 사용자 ID={}의 기존 SSE 연결 종료", userId);
             }
-        }, 0, 30, TimeUnit.SECONDS);
 
-        int unreadCount = notificationRepository.countByReceiver_IdAndIsReadFalse(userId);
-        try {
-            emitter.send(SseEmitter.event().name("connect").data(unreadCount));
-            log.info("[SSE 연결 완료] 사용자 ID={}에게 초기 connect 이벤트 전송 완료", userId);
-        } catch (IOException e) {
-            cleanup.run();
-            log.error("[SSE 연결 실패] 사용자 ID={} 초기 데이터 전송 실패", userId, e);
+            Runnable cleanup = () -> {
+                log.info("[SSE Cleanup] 사용자 ID={} 리소스 정리 시작", userId);
+                // remove(key, value)를 사용하여 현재 emitter와 일치할 경우에만 제거
+                // 이렇게 하면 실수로 새로운 연결의 리소스를 제거하는 것을 방지할 수 있습니다.
+                if (emitters.remove(userId, emitter)) {
+                    shutdownPingExecutor(userId);
+                    log.info("[SSE Cleanup] 사용자 ID={} 리소스 정리 완료", userId);
+                }
+            };
+
+            emitter.onCompletion(() -> {
+                log.info("[SSE onCompletion] 사용자 ID={} SSE 연결 정상 종료", userId);
+                cleanup.run();
+            });
+            emitter.onTimeout(() -> {
+                log.info("[SSE onTimeout] 사용자 ID={} SSE 연결 타임아웃", userId);
+                cleanup.run();
+            });
+            emitter.onError(e -> {
+                log.error("[SSE onError] 사용자 ID={} SSE 오류 발생", userId, e);
+                cleanup.run();
+            });
+
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            pingExecutors.put(userId, executor);
+            executor.scheduleAtFixedRate(() -> {
+                try {
+                    emitter.send(SseEmitter.event().name("ping").data("keep-alive"));
+                    log.debug("[SSE 핑] 사용자 ID={}에게 ping 전송", userId);
+                } catch (IOException e) {
+                    // onError 콜백이 cleanup을 호출하므로 여기서는 completeWithError를 호출할 필요가 없습니다.
+                    log.warn("[SSE 핑 실패] 사용자 ID={} ping 전송 실패. 연결이 종료되었을 수 있습니다.", userId);
+                }
+            }, 0, 30, TimeUnit.SECONDS); // 30초마다 ping 전송
         }
-
         return emitter;
     }
 
@@ -164,6 +172,12 @@ public class NotificationService {
         }
     }
 
+    public void sendNotificationSSEWithFcm(String userId, NotificationDTO dto) {
+        log.info("[SSE 알림 전송] 사용자 ID={}에게 알림 전송 요청", userId);
+        sendNotification(userId, dto);
+        sendFcmNotification(userId, dto);
+    }
+
     public void sendNotification(String userId, NotificationDTO dto) {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
@@ -173,14 +187,12 @@ public class NotificationService {
                         .data(dto));
                 log.info("[SSE 알림 전송] 사용자 ID={}에게 알림 전송 완료", userId);
             } catch (IOException e) {
-                emitters.remove(userId);
-                shutdownPingExecutor(userId);
+                // 이 경우 onError 콜백이 호출되어 리소스가 정리됩니다.
                 log.error("[SSE 알림 전송 실패] 사용자 ID={} 알림 전송 중 오류 발생", userId, e);
             }
         } else {
             log.warn("[SSE 알림 전송 실패] 사용자 ID={}의 emitter가 존재하지 않습니다.", userId);
         }
-        sendFcmNotification(userId, dto);
     }
 
     private void sendFcmNotification(String userId, NotificationDTO dto) {
@@ -198,7 +210,7 @@ public class NotificationService {
                             .setBody(dto.getMessage())
                             .build())
                     .putData("type", dto.getType())
-                    .putData("targetId", dto.getReceiverId())
+                    .putData("targetId", dto.getReceiverId()) // 프론트에서 이동할 경로에 필요한 ID
                     .build();
 
             try {
@@ -208,5 +220,9 @@ public class NotificationService {
                 log.error("[FCM] 사용자 {}에게 알림 전송 실패", userId, e);
             }
         }
+    }
+
+    public int getUnreadCount(String userId) {
+        return notificationRepository.countByReceiver_IdAndIsReadFalse(userId);
     }
 }

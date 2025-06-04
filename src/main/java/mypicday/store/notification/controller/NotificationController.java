@@ -49,6 +49,16 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/unread/count")
+    public ResponseEntity<Integer> getUnreadCount(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("[GET] /api/notifications/unread/count - 읽지 않은 알림 개수 조회 요청, userId={}", customUserDetails.getId());
+
+        int unreadCount = notificationService.getUnreadCount(customUserDetails.getId());
+
+        log.info("읽지 않은 알림 개수: {}", unreadCount);
+        return ResponseEntity.ok(unreadCount);
+    }
+
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         String userId = customUserDetails.getId();
@@ -59,6 +69,4 @@ public class NotificationController {
         log.info("[SSE] SSE 연결 완료, userId={}", userId);
         return emitter;
     }
-
-
 }
