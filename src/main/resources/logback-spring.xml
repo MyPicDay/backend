@@ -10,6 +10,22 @@
         </encoder>
     </appender>
 
+    <!-- 파일 출력 설정 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/application.log</file> <!-- 로그 파일 경로 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>
+                [%d{yyyy-MM-dd HH:mm:ss}] %-5level [%thread] %logger{36} : %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
     <!-- 🔹 dev 환경 전용 로그 설정 -->
     <springProfile name="dev,test">
         <logger name="jdbc.sqlonly" level="DEBUG" />
@@ -19,6 +35,7 @@
 
         <root level="INFO">
             <appender-ref ref="STDOUT"/>
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
 
@@ -26,6 +43,7 @@
     <springProfile name="prod">
         <root level="INFO">
             <appender-ref ref="STDOUT"/>
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
 
