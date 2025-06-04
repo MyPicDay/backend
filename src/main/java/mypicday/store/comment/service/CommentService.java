@@ -92,7 +92,7 @@ public class CommentService {
 
         NotificationDTO dto = NotificationDTO.from(notification, profileImage, diaryThumbnail, moveToWhere);
 
-        notificationService.sendNotification(receiver.getId(), dto);
+        notificationService.sendNotificationSSEWithFcm(receiver.getId(), dto);
         log.info("[SSE 알림 전송 완료] to={}, type={}", receiver.getId(), type);
     }
 
