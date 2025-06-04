@@ -44,6 +44,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     @Query("select d from Diary d join fetch d.user left join fetch d.comments where d.id = :diaryId")
     List<Diary> findAllComments(@Param("diaryId") Long diaryId);
 
+
+
     @Query("select d from Diary d join fetch d.user left join fetch d.comments c where d.id = :diaryId and c.parent is not null")
     List<Diary> findAllReplies(Long diaryId);
 
@@ -51,7 +53,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
                                                                     LocalDateTime startOfMonth,
                                                                     LocalDateTime endOfMonth);
 
-    int countByUserId(String userId);
+    int countByUser_Id(String userId);
 
     // @Query("select d from Diary d left join fetch d.imageList where d.user.id = :userId and d.createdAt between :startOfMonth and :endOfMonth order by d.createdAt desc")
     // List<Diary> findByUserIdAndCreatedAtBetweenWithImages(@Param("userId") String userId,

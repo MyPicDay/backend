@@ -1,17 +1,23 @@
 package mypicday.store.diary.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.comment.dto.reponse.ResponseCommentDto;
 import mypicday.store.comment.dto.reponse.UserCommentsDto;
 import mypicday.store.comment.entity.Comment;
+import mypicday.store.comment.service.CommentService;
 import mypicday.store.diary.dto.DiaryDto;
+import mypicday.store.diary.dto.response.CommentDto;
+import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
 import mypicday.store.diary.dto.response.UserDiaryDto;
 import mypicday.store.diary.entity.Diary;
 import mypicday.store.diary.service.DiaryService;
 import mypicday.store.file.FileUtil;
 import mypicday.store.global.config.CustomUserDetails;
+import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.global.util.RequestMetaMapper;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,19 +40,26 @@ public class ApiDiaryController {
 
     private final DiaryService diaryService;
     private final FileUtil fileUtil;
+    private final RequestMetaMapper requestMetaMapper;
+    private final CommentService commentService;
+
 
     @PostMapping("/diary")
     public ResponseEntity<Map<String ,String>> Diary(@ModelAttribute DiaryDto diaryDto,
                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
         String userId = customUserDetails.getId();
-        Optional<Diary> diary = diaryService.updateDiary(userId, diaryDto);
-        if (diary.isPresent()) {
+
+        List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
+
+        diaryDto.setAllImages(images);
+        boolean bol = diaryService.updateDiary(userId, diaryDto);
+
+        if (!bol) {
             return ResponseEntity.ok(Map.of("id", userId));
         }
 
-        // 새로운 FileUtil을 사용하여 파일 저장 (userId 전달)
-        List<String> images = fileUtil.saveFiles(diaryDto.getImages(), userId);
-        diaryDto.setAllImages(images);
+
+
 
 
         diaryService.save(userId, diaryDto);
@@ -119,7 +132,18 @@ public class ApiDiaryController {
         return new ResponseEntity<>(userCommentsDto, HttpStatus.OK);
     }
 
+    @GetMapping("/diaries/{diaryId}")
+    public ResponseEntity<DiaryDetailResponseDTO> getDiaryDetail(@AuthenticationPrincipal CustomUserDetails customUserDetails ,HttpServletRequest request, @PathVariable Long diaryId) {
+        String userId  = customUserDetails.getId();
+        RequestMetaInfo requestMetaInfo = requestMetaMapper.extractMetaInfo(request);
+        DiaryDetailResponseDTO detail = diaryService.getDiaryDetail(userId ,diaryId, requestMetaInfo);
+        List<Comment> comments = commentService.findAllByDiaryId(diaryId);
+        if (comments == null) {
+            return ResponseEntity.ok(detail) ;
+        }
 
+        return ResponseEntity.ok(detail);
+    }
 
 }
 

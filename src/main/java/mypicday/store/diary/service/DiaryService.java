@@ -1,6 +1,14 @@
 package mypicday.store.diary.service;
 
+import mypicday.store.comment.entity.Comment;
+import mypicday.store.comment.service.CommentService;
+import mypicday.store.diary.dto.response.CommentDto;
+import mypicday.store.diary.dto.response.DiaryDetailResponseDTO;
 import mypicday.store.diary.dto.response.DiaryResponse;
+import mypicday.store.diary.mapper.DiaryMapper;
+import mypicday.store.global.dto.RequestMetaInfo;
+import mypicday.store.likedUser.service.LikedUserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,8 +37,14 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-
+    private final LikedUserService likedUserService;
     private final UserRepository userRepository;
+    private final CommentService commentService;
+    private final DiaryMapper diaryMapper;
+
+    public int countUserDiaries(String userId) {
+        return diaryRepository.countByUser_Id(userId);
+    }
 
     public Diary save(String userID , DiaryDto diaryDto) {
         Optional<User> user = userRepository.findById(userID);
@@ -64,12 +79,16 @@ public class DiaryService {
 
     }
 
-    public Optional<Diary> updateDiary(String userId , DiaryDto diaryDto) {
+    public boolean updateDiary(String userId , DiaryDto diaryDto) {
         LocalDateTime startOfDay = diaryDto.getDate().atStartOfDay();
+
         LocalDateTime endOfDay = diaryDto.getDate().atTime(23, 59, 59);
         Optional<Diary> diary = diaryRepository.findUserIdAndCreatedAt(userId, startOfDay, endOfDay);
         diary.ifPresent(value -> value.update(diaryDto.getTitle() , diaryDto.getContent() , Visibility.valueOf(diaryDto.getVisibility().toUpperCase()) , diaryDto.getAllImages()));
-        return diary ;
+        if (diary.isEmpty()) {
+            return true ;
+        }
+        return false;
     }
 
     @Transactional(readOnly = true)
@@ -81,6 +100,8 @@ public class DiaryService {
     public List<Diary> findAllComments(Long diaryId) {
         return diaryRepository.findAllComments(diaryId);
     }
+
+
 
     @Transactional(readOnly = true)
     public List<Diary> findAllReplies(Long diaryId) {
@@ -109,4 +130,21 @@ public class DiaryService {
                         diary.getCreatedAt().toLocalDate()))
                 .collect(Collectors.toList());
     }
+
+    public DiaryDetailResponseDTO getDiaryDetail(String userId ,Long diaryId, RequestMetaInfo metaInfo) {
+        Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new IllegalArgumentException("Diary not found"));
+        User user = diary.getUser();
+        log.info("user.getName {}", user.getNickname());
+        LikeEntity like = diary.getLike();
+        Long likeId = like.getId();
+
+        boolean liked = likedUserService.findLike(userId , likeId);
+        int commentCount = commentService.commentCountByDiaryId(diaryId);
+        List<Comment> comments = commentService.findAllByDiaryId(diaryId);
+        DiaryDetailResponseDTO diaryDetailResponseDTO = diaryMapper.toDiaryDetailResponseDTO(diary, user, commentCount, metaInfo , liked ,comments);
+
+        return diaryDetailResponseDTO;
+    }
+
+
 }

@@ -29,7 +29,7 @@ public class ProfileController {
 
         long followers = followRepository.countByFollowing_Id(userId);
         long followings = followRepository.countByFollower_Id(userId);
-        long diaryCount = diaryRepository.countByUserId(userId);
+        long diaryCount = diaryRepository.countByUser_Id(userId);
 
         boolean isFollowing = followRepository.existsByFollower_IdAndFollowing_Id(me.getId(), userId);
 

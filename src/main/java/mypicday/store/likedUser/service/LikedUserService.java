@@ -56,13 +56,15 @@ public class LikedUserService {
         }
 
     }
-    public boolean findLike(String userId , long diaryId) {
-        Optional<Boolean> likedByUserId = likedUserRepository.findLikedByUserId(userId , diaryId);
+    public boolean findLike(String userId , long likedId) {
+        Optional<Boolean> likedByUserId = likedUserRepository.findLikedByUserId(userId , likedId);
         if(likedByUserId.isPresent()) {
-            return likedByUserId.get();
+            log.info("likedByUserId {}", likedByUserId.get());
+            return likedByUserId.get() ;
+
         }
 
-        log.info("likedByUserId: {}", likedByUserId);
+       // log.info("likedByUserId: {}", likedByUserId);
         return false ;
 
 

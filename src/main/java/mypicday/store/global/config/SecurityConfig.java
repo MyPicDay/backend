@@ -31,7 +31,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:3000",
                 "https://*.mypicday.store",
                 "https://mypicday.store",
-                "http://dev.mypicday.store" // 임시용
+                "http://dev.mypicday.store",
+                "https://dev.mypicday.store"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
@@ -53,20 +54,13 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/diaries/images/{userId}/{fileName:.+}",
                                 "/api/characters/fixed/**",
-                                "/api/users/{userid}/followers",
-                                "/api/users/**",
-                                "/api/followings/{userId}",
-                                "/api/users/following/{userId}",
-                                "/api/profiles/**",
-                                "/follow/**"
+                                "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
-
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

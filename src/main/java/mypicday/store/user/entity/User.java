@@ -27,18 +27,13 @@ public class User extends BaseEntity {
     //@Column(name = "password", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화'")
     private String password;
 
-    // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
+   // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
     private String nickname;
 
     private String avatar;
 
     @OneToMany(mappedBy = "user")
     private List<Diary> diaries = new ArrayList<>();
-
-    public void changeAvatar(String avatar) {
-        this.avatar = avatar;
-
-    }
 
     //내가 팔로잉 하는 유저
     @OneToMany(mappedBy = "follower")
@@ -67,4 +62,8 @@ public class User extends BaseEntity {
         this.followers = followers;
     }
 
+    public void changeAvatar(String avatar) {
+        this.avatar = avatar;
+
+    }
 }

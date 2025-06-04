@@ -24,6 +24,7 @@ public class ApiLikeController {
 
     @PostMapping("/diary/like")
     public void UsersLike(@RequestBody LikedDto likedDto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("likedDto: {}", likedDto);
         String userId = customUserDetails.getId();
         likedUserService.LikedUser(userId , likedDto);
     }

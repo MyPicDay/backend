@@ -60,8 +60,8 @@ public class FollowService {
                     return new UserProfileDTO(
                             followed.getId(),
                             followed.getNickname(),
-                            followed.getEmail(),
                             followed.getAvatar(),
+                            followed.getEmail(),
                             true  // 내가 팔로우한 사람이므로 항상 true
                     );
                 })
@@ -81,8 +81,8 @@ public class FollowService {
                     return new UserProfileDTO(
                             followed.getId(),
                             followed.getNickname(),
-                            followed.getEmail(),
                             followed.getAvatar(),
+                            followed.getEmail(),
                             true  // 내가 팔로우한 사람이므로 항상 true
                     );
                 })

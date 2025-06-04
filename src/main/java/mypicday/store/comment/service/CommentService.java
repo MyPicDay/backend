@@ -1,6 +1,6 @@
 package mypicday.store.comment.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mypicday.store.comment.dto.request.CommentDto;
@@ -12,6 +12,9 @@ import mypicday.store.diary.repository.DiaryRepository;
 import mypicday.store.user.entity.User;
 import mypicday.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +47,15 @@ public class CommentService {
         //log.info("parentComment = {}", parentComment);
 
         return commentRepository.save(Comment.createReply(user , diary ,replyDto.getComment() , parentComment));
+    }
+
+    public int commentCountByDiaryId(Long diaryId){
+        return commentRepository.countByDiary_Id(diaryId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Comment> findAllByDiaryId(Long diaryId) {
+        return commentRepository.findAllByDiaryId(diaryId);
     }
 
 }
