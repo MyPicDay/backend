@@ -22,12 +22,11 @@ public class User extends BaseEntity {
     @Column(length = 36)
     private String id;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
-    //@Column(name = "password", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화'")
     private String password;
 
-   // @Column(name = "nickname", nullable = false, columnDefinition = "VARCHAR(255) COMMENT '암호화(복호화 가능)'")
     private String nickname;
 
     private String avatar;

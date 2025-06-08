@@ -24,6 +24,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final SseAuthenticationFilter sseAuthenticationFilter;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -54,6 +55,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/diaries/images/{userId}/{fileName:.+}",
                                 "/api/characters/fixed/**",
+                                "/api/notifications/subscribe",
                                 "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated()
@@ -62,6 +64,7 @@ public class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(sseAuthenticationFilter, JwtFilter.class);
 
         return http.build();
     }

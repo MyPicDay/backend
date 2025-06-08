@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -113,6 +112,9 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails user, HttpServletRequest request) {
+        if (user == null || user.getEmail() == null) {
+            return ResponseEntity.status(401).body("로그인 상태가 아닙니다.");
+        }
         String key = user.getEmail() + "-" + request.getHeader("Device-Id");
         refreshTokenRepository.deleteById(key);
 

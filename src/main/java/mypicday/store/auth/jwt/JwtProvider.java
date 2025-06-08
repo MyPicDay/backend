@@ -5,8 +5,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
+import mypicday.store.global.config.CustomUserDetailService;
+import mypicday.store.global.config.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.security.Key;
 import java.util.Date;
@@ -17,11 +21,17 @@ import java.util.List;
 @Component
 public class JwtProvider {
 
+    private final CustomUserDetailService customUserDetailService;
+
     @Value("${jwt.secret}")
     private String secretKey;
 
     private final long accessValidityInMs = 3600000; // 1시간
     private final long refreshValidityInMs = 36000000; // 10시간
+
+    public JwtProvider(CustomUserDetailService customUserDetailService) {
+        this.customUserDetailService = customUserDetailService;
+    }
 
     /*
     * JWT Access Token 생성
@@ -112,6 +122,16 @@ public class JwtProvider {
         }
         return token;
     }
+
+    public Authentication getAuthentication(String token) {
+        token = cleanToken(token);
+        String email = getEmailFromToken(token);
+
+        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailService.loadUserByUsername(email);
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+
 
 }
 
